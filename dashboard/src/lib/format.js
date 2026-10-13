@@ -1,0 +1,89 @@
+export function time(d) {
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+// Lock-screen style: "5:20", no AM/PM.
+export function clockTime(d) {
+  return time(d).split(/\s/)[0];
+}
+export function longDate(d) {
+  return d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+}
+export function dayKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+export function addDays(d, n) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+}
+// Calendar colour as CSS variables (the palette changes with the theme).
+export function calVars(e) {
+  const n = e.cal % 4;
+  return '--c:var(--cal' + n + ');--c-tint:var(--cal' + n + '-tint)';
+}
+// Events touching a local calendar day. All-day events are plain dates with an exclusive end.
+// Looks up a per-feed index (built once per calendar copy) instead of scanning every event for
+// every day: Month, Week, Home and the clock screen ask about many days each minute.
+const indexes = new WeakMap();
+export function eventsOn(events, day) {
+  let byDay = indexes.get(events);
+  if (!byDay) indexes.set(events, (byDay = indexDays(events)));
+  return byDay.get(dayKey(day)) || [];
+}
+function indexDays(events) {
+  const byDay = new Map();
+  const add = (k, e) => { if (!byDay.has(k)) byDay.set(k, []); byDay.get(k).push(e); };
+  for (const e of events) {
+    if (!e.allDay) { add(dayKey(new Date(e.start)), e); continue; }
+    const [y, m, d] = e.start.split('-').map(Number);
+    for (let i = 0, k = e.start; k < e.end && i < 400; k = dayKey(new Date(y, m - 1, d + ++i))) add(k, e);
+  }
+  return byDay;
+}
+export function isPast(e, now) {
+  return !e.allDay && Date.parse(e.end) <= now.getTime();
+}
+export function isNow(e, now) {
+  return !e.allDay && Date.parse(e.start) <= now.getTime() && now.getTime() < Date.parse(e.end);
+}
+// "5:00 – 6:30 PM", or "11:00 AM – 1:00 PM" across noon.
+export function timeRange(e) {
+  const a = time(new Date(e.start)), b = time(new Date(e.end));
+  const [at, ap] = a.split(/\s/), [, bp] = b.split(/\s/);
+  return (ap === bp ? at : a) + ' – ' + b;
+}
+export function dueLabel(due, now) {
+  const today = dayKey(now), tomorrow = dayKey(addDays(now, 1));
+  if (due < today) return 'Overdue';
+  if (due === today) return 'Today';
+  if (due === tomorrow) return 'Tomorrow';
+  const [y, m, d] = due.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+}
+// WMO weather codes (Open-Meteo) -> label + icon name + icon tint.
+export function weatherInfo(code, day = true) {
+  if (code === 0) return { label: day ? 'Sunny' : 'Clear', icon: day ? 'sun' : 'moon', tint: day ? 'sun' : '' };
+  if (code <= 2) return { label: 'Partly Cloudy', icon: day ? 'cloudSun' : 'cloud', tint: day ? 'sun' : '' };
+  if (code === 3) return { label: 'Cloudy', icon: 'cloud', tint: '' };
+  if (code <= 48) return { label: 'Foggy', icon: 'fog', tint: '' };
+  if (code <= 57) return { label: 'Drizzle', icon: 'rain', tint: 'rain' };
+  if (code <= 67) return { label: 'Rain', icon: 'rain', tint: 'rain' };
+  if (code <= 77) return { label: 'Snow', icon: 'snow', tint: '' };
+  if (code <= 82) return { label: 'Showers', icon: 'rain', tint: 'rain' };
+  if (code <= 86) return { label: 'Snow Showers', icon: 'snow', tint: '' };
+  return { label: 'Thunderstorms', icon: 'storm', tint: 'rain' };
+}
+export function dow(date) {
+  return new Date(date + 'T12:00').toLocaleDateString([], { weekday: 'short' });
+}
+
+// "Tomorrow" or "Wed, Oct 21" for an event's start day (all-day events are plain dates).
+export function dayName(e, now) {
+  const day = e.allDay ? new Date(e.start + 'T12:00') : new Date(e.start);
+  if (dayKey(day) === dayKey(addDays(now, 1))) return 'Tomorrow';
+  return day.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+// Recipe titles without asides: "Algerian Kefta (Meatballs)" -> "Algerian Kefta".
+export function recipeTitle(t) {
+  const short = String(t || '').replace(/\s*\([^)]*\)/g, '').replace(/\s{2,}/g, ' ').trim();
+  return short || String(t || '').trim();
+}

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+.wrangler/
+# Upstream repo, cloned for reference: git clone https://github.com/wesbos/photo-frame-dashboard reference/photo-frame-dashboard
+reference/
+# Device dumps and identifiers. Never commit.
+backups/
+diagnostics/
+.dev.vars
+kiosk/build/
+.prod.vars
+.frame.vars

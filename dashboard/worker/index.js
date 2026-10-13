@@ -1,0 +1,178 @@
+// Serves the dashboard (static assets) and its API:
+//   GET  /api/calendar               merged iCal feeds (cron refreshes them into KV every 10 min)
+//   GET  /api/weather                Open-Meteo current + 5-day (see weather.js)
+//   GET  /api/lists/:list            Todoist project tasks, list = groceries | todo (see todoist.js)
+//   POST /api/lists/:list            { content, description? } adds an item, or { items: [...] } several
+//   POST /api/lists/:list/:id/done   completes an item
+//   GET  /api/photos                 idle-screen photo list from the iCloud shared album (see photos.js)
+//   GET  /api/photos/:id             one photo, passed through from iCloud
+//   POST /api/messages               an agent posts a full-screen message (AGENT_TOKEN; see messages.js)
+//   GET  /api/messages               pending messages for the frame
+//   GET  /api/messages/live          WebSocket: messages pushed the moment they change
+//   POST /api/messages/:id/dismiss   the frame's X button
+//   /api/recipes...                  Explore (TheMealDB) and Saved recipes (see recipes.js)
+//
+// Secrets (`wrangler secret put`, or .dev.vars locally):
+//   CALENDAR_URLS  iCal links separated by spaces, commas or newlines. Google "Secret address in
+//                  iCal format" and iCloud public calendar links (webcal://) both work.
+//   DASHBOARD_KEY  shared key the frame sends with every API call. Unset = no check (dev only).
+//   TODOIST_TOKEN  Todoist API token.
+//   ALBUM_URL      iCloud shared album link with Public Website on.
+//   AGENT_TOKEN    lets AI agents post messages and save recipes; it can't read anything.
+// Optional: DISPLAY_TZ  IANA zone for times with no TZID and no X-WR-TIMEZONE (default UTC).
+import { expand, merge } from './calendar.js';
+import { getWeather } from './weather.js';
+import { LISTS, getList, addItem, completeItem } from './todoist.js';
+import { listPhotos, photoResponse } from './photos.js';
+import { room } from './messages.js';
+export { MessageRoom } from './messages.js'; // Durable Object class (wrangler.jsonc)
+import { explore, listSaved, saveRecipe, deleteRecipe, recipeImage } from './recipes.js';
+
+const KEY = 'calendar';
+const DAY = 864e5;
+const DAYS_AHEAD = 70;  // Calendar: five weeks of week view, and month view through next month
+const DAYS_BACK = 40;   // month view shows the whole current month, so include its earlier days
+// The cron refreshes the calendar every 10 minutes but only writes KV when it changed, or hourly
+// (so `updated` stays meaningful). Requests refresh it themselves only if the cron has fallen behind.
+const HEARTBEAT_MS = 60 * 60 * 1000;
+const STALE_MS = 75 * 60 * 1000;
+
+export default {
+  async fetch(req, env, ctx) {
+    const url = new URL(req.url);
+    if (!url.pathname.startsWith('/api/')) {
+      const res = await env.ASSETS.fetch(req);
+      if (!(res.headers.get('Content-Type') || '').includes('text/html')) return res;
+      // Never cache the page, or the frame keeps running an old build after a deploy.
+      const page = new Response(res.body, res);
+      page.headers.set('Cache-Control', 'no-store');
+      return page;
+    }
+    // Agents post with their own token, which opens this one route and nothing else.
+    if (url.pathname === '/api/messages' && req.method === 'POST') {
+      if (!env.AGENT_TOKEN || req.headers.get('Authorization') !== 'Bearer ' + env.AGENT_TOKEN) return json({ error: 'unauthorized' }, 401);
+      return room(env).fetch('https://room/post', { method: 'POST', body: await req.text() });
+    }
+    // Agents may also save recipes with their token (the frame saves with its own key).
+    const agent = env.AGENT_TOKEN && req.headers.get('Authorization') === 'Bearer ' + env.AGENT_TOKEN;
+    if (url.pathname === '/api/recipes' && req.method === 'POST' && agent) {
+      const { status, body } = await saveRecipe(env, await req.json().catch(() => ({})));
+      return json(body, status);
+    }
+    if (!authorized(req, env)) return json({ error: 'unauthorized' }, 401);
+
+    try {
+      if (url.pathname === '/api/calendar') {
+        const stored = await env.CALENDAR.get(KEY, 'json');
+        if (!stored || url.searchParams.has('refresh')) return json(await updateCalendar(env, stored));
+        // Stale: answer from the copy now, bring it up to date for the next poll.
+        if (Date.now() - Date.parse(stored.updated) > STALE_MS) ctx.waitUntil(updateCalendar(env, stored));
+        return json(stored);
+      }
+      if (url.pathname === '/api/weather') return json(await getWeather(env));
+      if (url.pathname === '/api/photos') {
+        if (!env.ALBUM_URL) return json({ photos: [], error: 'Add ALBUM_URL to show photos' });
+        return json(await listPhotos(env, ctx));
+      }
+      if (url.pathname.startsWith('/api/photos/')) return photoResponse(env, url.pathname.slice('/api/photos/'.length), ctx);
+      if (url.pathname === '/api/messages' && req.method === 'GET') return room(env).fetch('https://room/list');
+      if (url.pathname === '/api/messages/live') return room(env).fetch(new Request('https://room/live', req));
+      if (url.pathname === '/api/recipes/explore') {
+        // TheMealDB barely changes: let the frame's own HTTP cache answer repeat visits for a day
+        // (no Worker request at all). Random picks are never cached.
+        const random = url.searchParams.has('random');
+        return json(await explore(url.searchParams), 200, random ? 'no-store' : 'private, max-age=86400');
+      }
+      if (url.pathname === '/api/recipes' && req.method === 'GET') return json(await listSaved(env));
+      if (url.pathname === '/api/recipes' && req.method === 'POST') {
+        const { status, body } = await saveRecipe(env, await req.json().catch(() => ({})));
+        return json(body, status);
+      }
+      const recipe = /^\/api\/recipes\/([\w-]+)(\/image)?$/.exec(url.pathname);
+      if (recipe && recipe[2] && req.method === 'GET') return recipeImage(env, recipe[1]);
+      if (recipe && !recipe[2] && req.method === 'DELETE') return json(await deleteRecipe(env, recipe[1]));
+      const dismiss = /^\/api\/messages\/([\w-]+)\/dismiss$/.exec(url.pathname);
+      if (dismiss && req.method === 'POST') return room(env).fetch('https://room/dismiss/' + dismiss[1], { method: 'POST' });
+
+      const [, , section, list, id, action] = url.pathname.split('/');
+      if (section === 'lists' && list in LISTS) {
+        if (!env.TODOIST_TOKEN) return json({ error: 'Add TODOIST_TOKEN to connect Todoist' }, 503);
+        if (req.method === 'GET' && !id) return json(await getList(env, list));
+        if (req.method === 'POST' && !id) {
+          const body = await req.json();
+          const clean = (x) => ({ content: String((x && x.content) || '').trim().slice(0, 500), description: String((x && x.description) || '').trim().slice(0, 500) });
+          if (Array.isArray(body.items)) {
+            // Several at once (recipe ingredients): added in parallel, up to 40.
+            const items = body.items.map(clean).filter((x) => x.content).slice(0, 40);
+            if (!items.length) return json({ error: 'items required' }, 400);
+            return json({ items: await Promise.all(items.map((x) => addItem(env, list, x.content, x.description))) });
+          }
+          const one = clean(body);
+          if (!one.content) return json({ error: 'content required' }, 400);
+          return json(await addItem(env, list, one.content, one.description));
+        }
+        if (req.method === 'POST' && id && action === 'done') return json(await completeItem(env, id));
+      }
+      return json({ error: 'not found' }, 404);
+    } catch (err) {
+      console.error(url.pathname, err);
+      return json({ error: String(err.message || err) }, 502);
+    }
+  },
+
+  async scheduled(controller, env) {
+    const data = await updateCalendar(env, await env.CALENDAR.get(KEY, 'json'));
+    console.log('cron ' + controller.cron + ': ' + data.events.length + ' events, ' + data.errors.length + ' errors');
+  },
+};
+
+// Fetches the feeds and stores the result when the events or errors changed, or hourly.
+async function updateCalendar(env, previous) {
+  const data = await refresh(env, previous);
+  const same = previous && JSON.stringify([previous.events, previous.errors]) === JSON.stringify([data.events, data.errors]);
+  if (!same || Date.now() - Date.parse(previous.updated) > HEARTBEAT_MS) await env.CALENDAR.put(KEY, JSON.stringify(data));
+  return data;
+}
+
+async function refresh(env, previous) {
+  const urls = String(env.CALENDAR_URLS || '').split(/[\s,]+/).filter(Boolean);
+  const now = Date.now(), from = now - DAYS_BACK * DAY, to = now + DAYS_AHEAD * DAY;
+  const tz = env.DISPLAY_TZ || 'UTC';
+  const errors = [];
+
+  const lists = await Promise.all(urls.map(async (link, cal) => {
+    try {
+      const res = await fetch(link.replace(/^webcal:/i, 'https:'), { headers: { Accept: 'text/calendar' } });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if (!text.includes('BEGIN:VCALENDAR')) throw new Error('not an iCal feed');
+      const events = expand(text, cal, from, to, tz);
+      // Holiday feeds (Google's or Apple's) are marked, so the frame can leave them out of counts.
+      if (/holiday/i.test(link)) for (const e of events) e.holiday = true;
+      return events;
+    } catch (err) {
+      // Keep this calendar's last good events so a blip doesn't blank the wall display.
+      errors.push({ cal, error: String(err.message || err) });
+      console.error('calendar ' + cal + ' failed:', err);
+      return (previous?.events || []).filter((e) => e.cal === cal).map((e) => ({ ...e, startMs: Date.parse(e.start) }));
+    }
+  }));
+
+  return { updated: new Date(now).toISOString(), calendars: urls.length, errors, events: merge(lists) };
+}
+
+function authorized(req, env) {
+  if (!env.DASHBOARD_KEY) return true;
+  if (req.headers.get('Authorization') === 'Bearer ' + env.DASHBOARD_KEY) return true;
+  // <img> and WebSocket can't send headers, so they may carry the key in the URL instead (GET only).
+  const url = new URL(req.url);
+  const keyInUrl = url.pathname.startsWith('/api/photos/') || url.pathname === '/api/messages/live' || /^\/api\/recipes\/[\w-]+\/image$/.test(url.pathname);
+  return req.method === 'GET' && keyInUrl && url.searchParams.get('key') === env.DASHBOARD_KEY;
+}
+
+function json(body, status = 200, cache = 'no-store') {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': cache },
+  });
+}

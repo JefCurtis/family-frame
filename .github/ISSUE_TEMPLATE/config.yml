@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Rooting or setting up a specific frame model
+    url: https://github.com/wesbos/photo-frame-dashboard/tree/main/docs
+    about: Device guides (ADB, root, WebView 106) live in Wes Bos's photo-frame-dashboard repo.

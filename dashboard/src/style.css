@@ -1,0 +1,72 @@
+/* iOS system palette, day and night. The theme attribute flips at sunrise and sunset.
+   WebView 106: no oklch(), color-mix(), nesting or :has(); rgba() for tints (never 8-digit hex).
+   Flat fills only: no shadows, blurs or filters for the Mali-400 to paint. */
+:root, [data-theme="light"] {
+  --ground: #f2f2f7;
+  --sheet: #ffffff;
+  --press: #e9e9ee;
+  --track: #e3e3e8;
+  --thumb: #ffffff;
+  --label: #000000;
+  --secondary: #6e6e73;
+  --tertiary: #c7c7cc;
+  --sep: #e5e5ea;
+  --blue: #007aff;
+  --orange: #ff9500;
+  --red: #ff3b30;
+  --yellow: #ff9f0a;
+  /* Text versions of the accents (4.5:1+ on sheets); the plain accents are for fills and icons. */
+  --red-text: #d70015;
+  --blue-text: #0060df;
+  --orange-text: #c93400;
+  --ring: #8e8e93;
+  --cal0: #ff3b30; --cal0-tint: rgba(255, 59, 48, .12);
+  --cal1: #007aff; --cal1-tint: rgba(0, 122, 255, .12);
+  --cal2: #34c759; --cal2-tint: rgba(52, 199, 89, .14);
+  --cal3: #af52de; --cal3-tint: rgba(175, 82, 222, .12);
+}
+[data-theme="dark"] {
+  --ground: #000000;
+  --sheet: #1c1c1e;
+  --press: #2c2c2e;
+  --track: #1c1c1e;
+  --thumb: #636366;
+  --label: #ffffff;
+  --secondary: #98989f;
+  --tertiary: #48484a;
+  --sep: #38383a;
+  --blue: #0a84ff;
+  --orange: #ff9f0a;
+  --red: #ff453a;
+  --yellow: #ffd60a;
+  --red-text: #ff6961;
+  --blue-text: #409cff;
+  --orange-text: #ffb340;
+  --ring: #7c7c80;
+  --cal0: #ff453a; --cal0-tint: rgba(255, 69, 58, .22);
+  --cal1: #0a84ff; --cal1-tint: rgba(10, 132, 255, .24);
+  --cal2: #30d158; --cal2-tint: rgba(48, 209, 88, .2);
+  --cal3: #bf5af2; --cal3-tint: rgba(191, 90, 242, .22);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--ground); color: var(--label); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 18px; line-height: 1.25; overflow: hidden;
+  -webkit-font-smoothing: antialiased; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; touch-action: manipulation; text-align: inherit; }
+input { -webkit-user-select: text; user-select: text; caret-color: var(--blue); }
+::selection { background: var(--cal1-tint); }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.i { flex: none; display: block; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* A widget: one flat sheet with generous padding. */
+.sheet { background: var(--sheet); border-radius: 28px; padding: 24px 26px; overflow: hidden; }
+
+.diag {
+  position: fixed; bottom: 8px; left: 8px; z-index: 999; padding: 8px 10px; border-radius: 8px;
+  background: rgba(0, 0, 0, .75); color: #0f0; font: 13px/1.4 monospace; pointer-events: none;
+}

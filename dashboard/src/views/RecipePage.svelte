@@ -1,0 +1,122 @@
+<script>
+  import Icon from '../components/Icon.svelte';
+  import { recipeTitle } from '../lib/format.js';
+  import { withKey } from '../lib/api.js';
+  import { recipes, saveRecipe, removeRecipe, addToGroceries } from '../lib/state.svelte.js';
+  let { recipe, onback } = $props();
+
+  // A recipe opened from Explore has an "mdb:" id; a saved one has its own id, savedAt and maybe ref.
+  // While loading, recipe is a stand-in with the card's title and photo (loading: true).
+  let savedCopy = $derived((recipes.saved || []).find((r) => r.id === recipe.id || (r.ref && r.ref === recipe.id)));
+  let isSavedView = $derived(!!recipe.savedAt);
+  let image = $derived(isSavedView
+    ? (recipe.hasImage ? withKey('/api/recipes/' + recipe.id + '/image') : null)
+    : recipe.image);
+
+  // Tap an ingredient you already have to cross it off; the rest go to Groceries.
+  let have = $state(new Set());
+  function toggle(i) { const s = new Set(have); s.has(i) ? s.delete(i) : s.add(i); have = s; }
+  let needed = $derived(recipe.ingredients.filter((_, i) => !have.has(i)));
+
+  let busy = $state(false);
+  let toast = $state(null);
+  async function act(fn, done) {
+    busy = true; toast = null;
+    try { toast = done(await fn()); } catch (e) { toast = 'Something went wrong: ' + e.message; }
+    busy = false;
+  }
+</script>
+
+<header class="top">
+  <button class="back" onclick={onback}><Icon name="chevronLeft" size={26} />Recipes</button>
+  <div class="actions">
+    {#if toast}<span class="toast">{toast}</span>{/if}
+    {#if isSavedView}
+      <button class="btn" disabled={busy} onclick={() => { removeRecipe(recipe.id); onback(); }}><Icon name="trash" size={20} />Remove</button>
+    {:else if savedCopy}
+      <span class="saved"><Icon name="check" size={20} />Saved</span>
+    {:else}
+      <button class="btn tint" disabled={busy || recipe.loading} onclick={() => act(() => saveRecipe(recipe), () => 'Saved')}><Icon name="bookmark" size={20} />Save</button>
+    {/if}
+    <button class="btn solid" disabled={busy || recipe.loading || !needed.length}
+      onclick={() => act(() => addToGroceries(recipe, needed), (n) => 'Added ' + n + ' to Groceries')}>
+      <Icon name="cart" size={20} />Add {recipe.loading ? '' : needed.length + ' '}to Groceries
+    </button>
+  </div>
+</header>
+
+<div class="page">
+  <section class="sheet side">
+    {#if image}<img src={image} alt="" />{:else if recipe.loading}<span class="ghost photo"></span>{/if}
+    {#if recipe.title}<h1>{recipeTitle(recipe.title)}</h1>{:else}<span class="ghost wide"></span>{/if}
+    <p class="meta">
+      {[recipe.category, recipe.area, recipe.time, recipe.servings && 'Serves ' + recipe.servings].filter(Boolean).join(' · ')}
+    </p>
+    {#if recipe.from}<p class="meta">Saved by {recipe.from}</p>{/if}
+  </section>
+
+  <section class="sheet ingredients">
+    <h2>Ingredients{#if !recipe.loading}<span class="num">{recipe.ingredients.length}</span>{/if}</h2>
+    <p class="hint">Tap what you already have</p>
+    <div class="scroll">
+      {#if recipe.loading}{#each Array(7) as _, i (i)}<span class="ghost row"></span>{/each}{/if}
+      {#if recipe.error}<p class="hint">Couldn’t load this recipe: {recipe.error}</p>{/if}
+      {#each recipe.ingredients as ing, i (i)}
+        <button class="ing" class:have={have.has(i)} onclick={() => toggle(i)}>
+          <span class="box">{#if have.has(i)}<Icon name="check" size={16} />{/if}</span>
+          <span class="name">{ing.name}</span>
+          {#if ing.measure}<span class="measure">{ing.measure}</span>{/if}
+        </button>
+      {/each}
+    </div>
+  </section>
+
+  <section class="sheet steps">
+    <h2>Steps</h2>
+    <ol class="scroll">
+      {#if recipe.loading}{#each Array(4) as _, i (i)}<span class="ghost para"></span>{/each}{/if}
+      {#each recipe.steps as step, i (i)}
+        <li><span class="num">{i + 1}</span><p>{step}</p></li>
+      {/each}
+    </ol>
+  </section>
+</div>
+
+<style>
+  .top { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; }
+  .back { display: flex; align-items: center; gap: 2px; height: 48px; padding: 0 14px 0 4px; font-size: 20px; font-weight: 600; color: var(--blue-text); }
+  .actions { display: flex; align-items: center; gap: 10px; }
+  .toast { font-size: 17px; color: var(--secondary); }
+  .saved { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; font-size: 18px; font-weight: 600; color: var(--secondary); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 20px; border-radius: 24px; font-size: 18px; font-weight: 600; color: var(--blue-text); }
+  .btn.tint { background: var(--track); }
+  .btn.solid { background: var(--blue); color: #fff; }
+  .btn:disabled { opacity: .45; }
+  .btn:active { opacity: .7; }
+  .page { flex: 1; min-height: 0; display: grid; grid-template-columns: 330px 1fr 1.35fr; gap: 16px; }
+  .sheet { min-height: 0; border-radius: 22px; }
+  .side { padding: 0 0 18px; overflow: hidden; display: flex; flex-direction: column; }
+  .side img { width: 100%; height: 230px; object-fit: cover; }
+  .side h1 { margin: 16px 20px 0; font-size: 24px; font-weight: 600; line-height: 1.2; }
+  .meta { margin: 8px 20px 0; font-size: 17px; color: var(--secondary); }
+  .ingredients, .steps { display: flex; flex-direction: column; padding: 18px 22px 8px; }
+  h2 { margin: 0; display: flex; align-items: baseline; gap: 8px; font-size: 21px; font-weight: 700; }
+  h2 .num { font-size: 16px; color: var(--secondary); font-weight: 600; }
+  .hint { margin: 2px 0 6px; font-size: 15px; color: var(--secondary); }
+  .scroll { flex: 1; min-height: 0; overflow-y: auto; }
+  .ing { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 0; text-align: left; }
+  .box { flex: none; width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--ring); display: grid; place-items: center; color: #fff; }
+  .have .box { background: var(--green, #34c759); border-color: var(--green, #34c759); }
+  .name { flex: 1; min-width: 0; font-size: 19px; }
+  .have .name { color: var(--secondary); text-decoration: line-through; }
+  .measure { font-size: 16px; color: var(--secondary); white-space: nowrap; }
+  ol { margin: 8px 0 0; padding: 0; list-style: none; }
+  li { display: flex; gap: 14px; padding: 8px 0 10px; }
+  li .num { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--track); font-size: 16px; font-weight: 700; }
+  .ghost { display: block; border-radius: 8px; background: var(--track); }
+  .ghost.photo { height: 230px; border-radius: 0; }
+  .ghost.wide { height: 28px; margin: 18px 20px 0; width: 70%; }
+  .ghost.row { height: 22px; margin: 12px 0 18px; width: 75%; }
+  .ghost.para { height: 60px; margin: 10px 0 16px; }
+  li p { margin: 3px 0 0; font-size: 20px; line-height: 1.4; }
+</style>

@@ -1,0 +1,336 @@
+import { test, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import worker from './index.js';
+import { shape } from './weather.js';
+import { MessageRoom } from './messages.js';
+
+// A MessageRoom behind a stand-in for the Durable Object namespace and its state.
+function fakeRoom() {
+  const data = new Map(), sockets = [], alarms = [];
+  const ctx = {
+    storage: { get: async (k) => structuredClone(data.get(k)), put: async (k, v) => { data.set(k, structuredClone(v)); }, setAlarm: async (t) => alarms.push(t), deleteAlarm: async () => alarms.push(null) },
+    getWebSockets: () => sockets,
+    acceptWebSocket: (ws) => sockets.push(ws),
+    setWebSocketAutoResponse() {},
+  };
+  const instance = new MessageRoom(ctx);
+  return { ns: { idFromName: (n) => n, get: () => ({ fetch: (u, init) => instance.fetch(u instanceof Request ? u : new Request(u, init)) }) }, sockets, alarms, instance };
+}
+
+// Fake Todoist API: two pages of projects, tasks with subtasks and due dates.
+let calls;
+const projects = [
+  { id: 'p1', name: 'Inbox' }, { id: 'p2', name: 'Groceries' }, { id: 'p3', name: 'To-do' },
+];
+const tasks = {
+  p2: [
+    { id: 't2', content: 'Eggs', child_order: 2 },
+    { id: 't1', content: 'Milk', child_order: 1 },
+    { id: 't3', content: 'Organic', parent_id: 't1', child_order: 1 },
+  ],
+  p3: [
+    { id: 'a', content: 'No date', child_order: 1, section_id: 's2', responsible_uid: 7 },
+    { id: 'b', content: 'Next week', due: { date: '2026-10-19' }, child_order: 2 },
+    { id: 'c', content: 'Overdue', due: { date: '2026-10-01T09:00:00' }, child_order: 3 },
+  ],
+};
+beforeEach(() => {
+  calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const u = new URL(url);
+    calls.push({ method: init.method || 'GET', path: u.pathname, auth: init.headers?.Authorization, body: init.body });
+    const page = (results, next = null) => Response.json({ results, next_cursor: next });
+    if (u.pathname === '/api/v1/projects') {
+      return u.searchParams.get('cursor') ? page(projects.slice(2)) : page(projects.slice(0, 2), 'c2');
+    }
+    if (u.pathname === '/api/v1/tasks' && init.method === 'POST') {
+      return Response.json({ id: 'new', content: JSON.parse(init.body).content });
+    }
+    if (u.pathname === '/api/v1/tasks') return page(tasks[u.searchParams.get('project_id')]);
+    if (u.pathname === '/api/v1/sections') return page(u.searchParams.get('project_id') === 'p3' ? [{ id: 's2', name: 'Later', section_order: 2 }, { id: 's1', name: 'Now', section_order: 1 }] : []);
+    if (u.pathname === '/api/v1/projects/p3/collaborators') return page([{ id: 7, name: 'Alex Morgan' }, { id: 8, name: 'Sam Rivera' }]);
+    if (/\/collaborators$/.test(u.pathname)) return new Response('not shared', { status: 400 });
+    if (/\/close$/.test(u.pathname)) return new Response(null, { status: 204 });
+    return new Response('nope', { status: 404 });
+  };
+});
+
+const env = { DASHBOARD_KEY: 'k', TODOIST_TOKEN: 'tok', ASSETS: { fetch: () => new Response('asset') } };
+const req = (path, init = {}) => worker.fetch(
+  new Request('https://frame.test' + path, { ...init, headers: { Authorization: 'Bearer k', ...init.headers } }), env, { waitUntil() {} });
+
+test('API calls need the dashboard key; assets do not', async () => {
+  const res = await worker.fetch(new Request('https://frame.test/api/lists/todo'), env, {});
+  assert.equal(res.status, 401);
+  assert.equal(await (await worker.fetch(new Request('https://frame.test/'), env, {})).text(), 'asset');
+});
+
+test('groceries: project found across pages, Todoist order, subtasks hidden', async () => {
+  const data = await (await req('/api/lists/groceries')).json();
+  assert.deepEqual(data.items.map((i) => i.content), ['Milk', 'Eggs']);
+  assert.deepEqual([data.sections, data.people], [[], {}]); // unshared, unsectioned project still works
+  assert.equal(data.project, 'Groceries');
+  assert.ok(calls.every((c) => c.auth === 'Bearer tok'));
+});
+
+test('to-dos: dated first, overdue on top', async () => {
+  const data = await (await req('/api/lists/todo')).json();
+  assert.deepEqual(data.items.map((i) => [i.content, i.due]), [['Overdue', '2026-10-01'], ['Next week', '2026-10-19'], ['No date', undefined]]);
+  assert.deepEqual(data.sections, [{ id: 's1', name: 'Now' }, { id: 's2', name: 'Later' }]); // Todoist order
+  assert.deepEqual(data.people, { 7: 'Alex Morgan', 8: 'Sam Rivera' });
+  assert.deepEqual([data.items[2].section, data.items[2].assignee], ['s2', '7']);
+});
+
+test('add and complete items', async () => {
+  const added = await (await req('/api/lists/groceries', { method: 'POST', body: JSON.stringify({ content: '  Bread ' }) })).json();
+  assert.deepEqual(added, { id: 'new', content: 'Bread' });
+  assert.equal(JSON.parse(calls.find((c) => c.method === 'POST').body).project_id, 'p2');
+  const done = await req('/api/lists/groceries/t1/done', { method: 'POST' });
+  assert.equal(done.status, 200);
+  assert.ok(calls.some((c) => c.path === '/api/v1/tasks/t1/close'));
+});
+
+test('unknown list and missing token', async () => {
+  assert.equal((await req('/api/lists/chores')).status, 404);
+  const res = await worker.fetch(new Request('https://frame.test/api/lists/todo', { headers: { Authorization: 'Bearer k' } }), { ...env, TODOIST_TOKEN: '' }, {});
+  assert.equal(res.status, 503);
+});
+
+test('weather is reduced to what the screen shows', () => {
+  const w = shape({
+    current: { temperature_2m: 61.6, apparent_temperature: 59.2, weather_code: 3, is_day: 1 },
+    daily: { time: ['2026-10-12'], temperature_2m_max: [68.4], temperature_2m_min: [50.5], precipitation_probability_max: [20], weather_code: [61], sunrise: ['2026-10-12T07:03'], sunset: ['2026-10-12T18:21'] },
+  }, 'fahrenheit');
+  assert.deepEqual({ ...w, updated: undefined }, {
+    unit: 'F', temp: 62, feels: 59, code: 3, day: true, updated: undefined,
+    days: [{ date: '2026-10-12', hi: 68, lo: 51, rain: 20, code: 61, sunrise: '2026-10-12T07:03', sunset: '2026-10-12T18:21' }],
+  });
+});
+
+test('stale calendar copy is served now and refreshed in the background', async () => {
+  const stale = { updated: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), calendars: 1, errors: [], events: [] }; // cron fell behind
+  const puts = [], waited = [];
+  const kv = { get: async () => stale, put: async (k, v) => puts.push(JSON.parse(v)) };
+  globalThis.fetch = async () => new Response('BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:x\r\nSUMMARY:New\r\nDTSTART:' + new Date(Date.now() + 864e5).toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z\r\nDTEND:' + new Date(Date.now() + 864e5 + 36e5).toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z\r\nEND:VEVENT\r\nEND:VCALENDAR');
+  const res = await worker.fetch(new Request('https://frame.test/api/calendar', { headers: { Authorization: 'Bearer k' } }),
+    { ...env, CALENDAR: kv, CALENDAR_URLS: 'https://feed.test/a.ics' }, { waitUntil: (p) => waited.push(p) });
+  assert.equal((await res.json()).events.length, 0); // served the stale copy immediately
+  await Promise.all(waited);
+  assert.equal(puts.length, 1);
+  assert.equal(puts[0].events.length, 1); // background refresh stored the new event
+});
+
+test('photos: album resolved anonymously, edited version preferred, videos skipped, images proxied', async () => {
+  const calls = [];
+  const store = new Map();
+  const kv = {
+    get: async (k, type) => (!store.has(k) ? null : type === 'json' ? JSON.parse(store.get(k)) : store.get(k)),
+    put: async (k, v) => store.set(k, v),
+  };
+  const res = (url, w, h, type = 'public.jpeg') => ({ resJPEGMedRes: { value: { downloadURL: url } }, resJPEGMedWidth: { value: w }, resJPEGMedHeight: { value: h }, resJPEGMedFileType: { value: type }, resJPEGMedFingerprint: { value: 'fp' + w } });
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push(String(url));
+    if (String(url).includes('/records/resolve')) {
+      assert.deepEqual(JSON.parse(init.body), { shortGUIDs: [{ value: 'TOKEN_1' }] });
+      return Response.json({ results: [{ zoneID: { zoneName: 'SharedCollection-X' }, anonymousPublicAccess: { token: 'anon', databasePartition: 'https://p1-ckdatabasews.icloud.com:443' } }] });
+    }
+    if (String(url).includes('/shared/records/query')) {
+      assert.match(String(url), /publicAccessAuthToken=anon/);
+      return Response.json({ records: [
+        { recordType: 'CPLMaster', recordName: 'M1', fields: res('https://cdn.test/m1/${f}', 2048, 1536) },
+        { recordType: 'CPLAsset', recordName: 'A1', fields: { masterRef: { value: { recordName: 'M1' } }, assetDate: { value: 1 } } },
+        { recordType: 'CPLMaster', recordName: 'M2', fields: res('https://cdn.test/m2/${f}', 2048, 1536) },
+        { recordType: 'CPLAsset', recordName: 'A2', fields: { masterRef: { value: { recordName: 'M2' } }, ...res('https://cdn.test/edited/${f}', 1536, 2048) } },
+        { recordType: 'CPLMaster', recordName: 'M3', fields: res('https://cdn.test/movie/${f}', 1920, 1080, 'com.apple.quicktime-movie') },
+        { recordType: 'CPLAsset', recordName: 'A3', fields: { masterRef: { value: { recordName: 'M3' } } } },
+      ] });
+    }
+    if (String(url).startsWith('https://cdn.test/')) return new Response('jpegbytes:' + url);
+    return new Response('nope', { status: 404 });
+  };
+  const penv = { ...env, CALENDAR: kv, ALBUM_URL: 'https://photos.icloud.com/shared/album/TOKEN_1' };
+  const list = await (await worker.fetch(new Request('https://frame.test/api/photos', { headers: { Authorization: 'Bearer k' } }), penv, {})).json();
+  assert.equal(list.photos.length, 2);
+  assert.ok(list.photos.every((p) => !('url' in p))); // Apple links never reach the frame
+  assert.deepEqual(list.photos.map((p) => [p.w, p.h]), [[2048, 1536], [1536, 2048]]);
+  // Image route: key in the query string is accepted for GET, and the edited version is served.
+  const img = await worker.fetch(new Request('https://frame.test/api/photos/' + list.photos[1].id + '?key=k'), penv, {});
+  assert.equal(img.status, 200);
+  assert.equal(await img.text(), 'jpegbytes:https://cdn.test/edited/photo.jpg');
+  assert.match(img.headers.get('Cache-Control'), /immutable/);
+  // Without the key: refused.
+  assert.equal((await worker.fetch(new Request('https://frame.test/api/photos/' + list.photos[1].id), penv, {})).status, 401);
+  // The image bytes are now kept in KV: a second request doesn't go back to iCloud.
+  const beforeImg = calls.length;
+  const again = await worker.fetch(new Request('https://frame.test/api/photos/' + list.photos[1].id + '?key=k'), penv, {});
+  assert.equal(await again.text(), 'jpegbytes:https://cdn.test/edited/photo.jpg');
+  assert.equal(calls.length, beforeImg);
+  // A second list call within the cache window is served from KV.
+  const before = calls.length;
+  await worker.fetch(new Request('https://frame.test/api/photos', { headers: { Authorization: 'Bearer k' } }), penv, {});
+  assert.equal(calls.length, before);
+});
+
+test('photos: small JPEG originals without a medium size are used as-is; large or HEIC originals are not', async () => {
+  const { toPhotos } = await import('./photos.js');
+  const orig = (w, h, type) => ({ resOriginalRes: { value: { downloadURL: 'https://cdn.test/o' + w + '/${f}' } }, resOriginalWidth: { value: w }, resOriginalHeight: { value: h }, resOriginalFileType: { value: type }, resOriginalFingerprint: { value: 'f' + w } });
+  const recs = [
+    { recordType: 'CPLMaster', recordName: 'M1', fields: orig(1024, 1535, 'public.jpeg') },
+    { recordType: 'CPLAsset', recordName: 'A1', fields: { masterRef: { value: { recordName: 'M1' } } } },
+    { recordType: 'CPLMaster', recordName: 'M2', fields: orig(4032, 3024, 'public.jpeg') },
+    { recordType: 'CPLAsset', recordName: 'A2', fields: { masterRef: { value: { recordName: 'M2' } } } },
+    { recordType: 'CPLMaster', recordName: 'M3', fields: orig(1024, 768, 'public.heic') },
+    { recordType: 'CPLAsset', recordName: 'A3', fields: { masterRef: { value: { recordName: 'M3' } } } },
+  ];
+  assert.deepEqual(toPhotos(recs).map((p) => p.url), ['https://cdn.test/o1024/photo.jpg']);
+});
+
+test('messages: agents post with their own token only; frame lists and dismisses with its key', async () => {
+  const menv = { ...env, MESSAGES: fakeRoom().ns, AGENT_TOKEN: 'agent' };
+  const post = (body, auth = 'Bearer agent') => worker.fetch(new Request('https://frame.test/api/messages', { method: 'POST', headers: { Authorization: auth }, body: JSON.stringify(body) }), menv, {});
+  const frame = (path, method = 'GET') => worker.fetch(new Request('https://frame.test' + path, { method, headers: { Authorization: 'Bearer k' } }), menv, {});
+
+  assert.equal((await post({ title: 'Hi' }, 'Bearer k')).status, 401);        // the frame key can't post
+  assert.equal((await post({ title: 'Hi' }, 'Bearer wrong')).status, 401);
+  assert.equal((await worker.fetch(new Request('https://frame.test/api/calendar', { headers: { Authorization: 'Bearer agent' } }), menv, {})).status, 401); // agent token reads nothing
+  assert.equal((await post({})).status, 400);
+  const created = await post({ title: '  Dinner is ready  ', body: 'Come down\r\nplease', from: 'Kitchen agent', ttl_minutes: 60 });
+  assert.equal(created.status, 201);
+  const { id } = await created.json();
+  await post({ body: 'x'.repeat(5000) });
+
+  const { messages } = await (await frame('/api/messages')).json();
+  assert.equal(messages.length, 2);
+  assert.deepEqual([messages[0].title, messages[0].body, messages[0].from], ['Dinner is ready', 'Come down\nplease', 'Kitchen agent']);
+  assert.ok(messages[0].expires > Date.now());
+  assert.equal(messages[1].body.length, 2000);
+  assert.equal(messages[0].speak, undefined); // speaks by default
+  await post({ title: 'quiet', speak: false });
+  assert.equal((await (await frame('/api/messages')).json()).messages.at(-1).speak, false);
+
+  assert.equal((await frame('/api/messages/' + id + '/dismiss', 'POST')).status, 200);
+  assert.equal((await (await frame('/api/messages')).json()).messages.length, 2); // the long one and 'quiet' remain
+
+  for (let i = 0; i < 18; i++) await post({ title: 'spam ' + i });
+  assert.equal((await post({ title: 'one too many' })).status, 429);
+});
+
+test('events from holiday feeds are marked; others are not', async () => {
+  const day = new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10).replace(/-/g, '');
+  const ics = (name) => 'BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:' + name + '\r\nSUMMARY:' + name + '\r\nDTSTART;VALUE=DATE:' + day + '\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n';
+  globalThis.fetch = async (url) => new Response(ics(String(url).includes('holiday') ? 'Holiday' : 'Family'));
+  const store = new Map();
+  const kv = { get: async (k) => (store.has(k) ? JSON.parse(store.get(k)) : null), put: async (k, v) => store.set(k, v) };
+  const cenv = { ...env, CALENDAR: kv, CALENDAR_URLS: 'https://family.test/a.ics https://calendar.google.com/calendar/ical/en.usa%23holiday%40group.v.calendar.google.com/public/basic.ics' };
+  const { events } = await (await worker.fetch(new Request('https://frame.test/api/calendar?refresh', { headers: { Authorization: 'Bearer k' } }), cenv, { waitUntil() {} })).json();
+  assert.deepEqual(events.map((e) => [e.title, !!e.holiday]).sort(), [['Family', false], ['Holiday', true]]);
+});
+
+test('recipes: explore normalizes TheMealDB; saved via agent or frame; image stored; groceries bulk add with description', async () => {
+  const store = new Map(), meta = new Map(), calls = [];
+  const kv = {
+    get: async (k, opt) => { if (!store.has(k)) return null; const t = typeof opt === 'string' ? opt : opt && opt.type; return t === 'json' ? JSON.parse(store.get(k)) : store.get(k); },
+    getWithMetadata: async (k) => ({ value: store.get(k) || null, metadata: meta.get(k) || null }),
+    put: async (k, v, o) => { store.set(k, v); if (o && o.metadata) meta.set(k, o.metadata); },
+    delete: async (k) => { store.delete(k); },
+  };
+  const meal = { idMeal: '1', strMeal: 'Fried Rice', strMealThumb: 'https://img.test/r.jpg', strCategory: 'Chicken', strArea: 'Chinese',
+    strInstructions: 'STEP 1. Cook rice.\r\n\r\n2) Fry it.', strIngredient1: 'Rice', strMeasure1: '2 cups', strIngredient2: ' ', strIngredient3: 'Egg', strMeasure3: '1' };
+  globalThis.fetch = async (url, init = {}) => {
+    const u = String(url); calls.push([init.method || 'GET', u, init.body]);
+    if (u.includes('lookup.php')) return Response.json({ meals: [meal] });
+    if (u.includes('filter.php')) return Response.json({ meals: [{ idMeal: '1', strMeal: 'Fried Rice', strMealThumb: 'https://img.test/r.jpg' }] });
+    if (u.startsWith('https://img.test/')) return new Response('jpg', { headers: { 'Content-Type': 'image/jpeg' } });
+    if (u.endsWith('/api/v1/projects')) return Response.json({ results: [{ id: 'p2', name: 'Groceries' }], next_cursor: null });
+    if (u.endsWith('/api/v1/tasks') && init.method === 'POST') { const b = JSON.parse(init.body); return Response.json({ id: 't-' + b.content, content: b.content }); }
+    return new Response('nope', { status: 404 });
+  };
+  const renv = { ...env, CALENDAR: kv, AGENT_TOKEN: 'agent' };
+  const call = (path, init = {}, auth = 'Bearer k') => worker.fetch(new Request('https://frame.test' + path, { ...init, headers: { Authorization: auth } }), renv, { waitUntil() {} });
+
+  const { recipe } = await (await call('/api/recipes/explore?id=mdb:1')).json();
+  assert.deepEqual([recipe.id, recipe.thumb, recipe.ingredients, recipe.steps], ['mdb:1', 'https://img.test/r.jpg/medium', [{ name: 'Rice', measure: '2 cups' }, { name: 'Egg', measure: '1' }], ['Cook rice.', 'Fry it.']]);
+  assert.equal((await (await call('/api/recipes/explore?c=Chicken')).json()).recipes[0].title, 'Fried Rice');
+
+  // Agent token can save recipes, but still can't read anything.
+  const saved = await call('/api/recipes', { method: 'POST', body: JSON.stringify({ title: 'Tacos', ingredients: ['Tortillas', { name: 'Beef', measure: '1 lb' }], steps: ['Cook.'], image: 'https://img.test/t.jpg', from: 'Claude' }) }, 'Bearer agent');
+  assert.equal(saved.status, 201);
+  const { id } = await saved.json();
+  assert.equal((await call('/api/recipes', {}, 'Bearer agent')).status, 401);
+  assert.equal((await call('/api/recipes', { method: 'POST', body: '{}' }, 'Bearer agent')).status, 400);
+  // Frame saves from Explore; saving the same one twice doesn't duplicate.
+  assert.equal((await call('/api/recipes', { method: 'POST', body: JSON.stringify({ ...recipe, ref: recipe.id }) })).status, 201);
+  assert.equal((await (await call('/api/recipes', { method: 'POST', body: JSON.stringify({ ...recipe, ref: recipe.id }) })).json()).existing, true);
+  const { recipes } = await (await call('/api/recipes')).json();
+  assert.deepEqual(recipes.map((r) => [r.title, !!r.hasImage]), [['Fried Rice', true], ['Tacos', true]]);
+  assert.equal(await (await call('/api/recipes/' + id + '/image?key=k', {}, '')).text(), 'jpg');
+  assert.equal((await call('/api/recipes/' + id + '/image', {}, '')).status, 401);
+  await call('/api/recipes/' + id, { method: 'DELETE' });
+  assert.equal((await (await call('/api/recipes')).json()).recipes.length, 1);
+  assert.equal(store.has('recipe-image:' + id), false);
+
+  // Ingredients to groceries in one request, each with the recipe in its description.
+  const added = await (await call('/api/lists/groceries', { method: 'POST', body: JSON.stringify({ items: [{ content: 'Rice (2 cups)', description: 'For: Fried Rice' }, { content: 'Egg', description: 'For: Fried Rice' }] }) })).json();
+  assert.equal(added.items.length, 2);
+  const posts = calls.filter(([m, u]) => m === 'POST' && u.endsWith('/api/v1/tasks')).map(([, , b]) => JSON.parse(b));
+  assert.deepEqual(posts.map((b) => [b.content, b.description]), [['Rice (2 cups)', 'For: Fried Rice'], ['Egg', 'For: Fried Rice']]);
+});
+
+test('recipes: vegetarian and vegan are left out of Explore and Surprise me', async () => {
+  const picks = ['Vegetarian', 'Vegan', 'Beef'];
+  const seen = [];
+  globalThis.fetch = async (url) => {
+    const u = String(url); seen.push(u);
+    if (u.includes('random.php')) { const c = picks.shift(); return Response.json({ meals: [{ idMeal: c, strMeal: c + ' dish', strCategory: c }] }); }
+    return Response.json({ meals: [{ idMeal: '9', strMeal: 'X', strMealThumb: 'https://img.test/x.jpg' }] });
+  };
+  const call = (path) => worker.fetch(new Request('https://frame.test' + path, { headers: { Authorization: 'Bearer k' } }), env, { waitUntil() {} });
+  const { recipe } = await (await call('/api/recipes/explore?random=1')).json();
+  assert.equal(recipe.category, 'Beef');
+  assert.deepEqual(await (await call('/api/recipes/explore?c=Vegan')).json(), { recipes: [] });
+  assert.ok(!seen.some((u) => u.includes('c=Vegan')));
+});
+
+test('list items carry the first line of their description as a short note', async () => {
+  const { sortTasks } = await import('./todoist.js');
+  const items = sortTasks([
+    { id: '1', content: 'Rice', description: 'For: Beef Mandi', child_order: 1 },
+    { id: '2', content: 'Milk', description: '\n  Whole, not 2%  \nSecond line', child_order: 2 },
+    { id: '3', content: 'Eggs', description: '', child_order: 3 },
+    { id: '4', content: 'Long', description: 'x'.repeat(200), child_order: 4 },
+  ], 'groceries');
+  assert.deepEqual(items.map((i) => i.note), ['For: Beef Mandi', 'Whole, not 2%', undefined, 'x'.repeat(119) + '…']);
+});
+
+test('calendar cron writes KV only when events change, or hourly', async () => {
+  const feed = 'BEGIN:VCALENDAR\r\nEND:VCALENDAR';
+  globalThis.fetch = async () => new Response(feed);
+  const run = async (stored) => {
+    const puts = [];
+    const kv = { get: async () => stored, put: async (k, v) => puts.push(v) };
+    await worker.scheduled({ cron: '*/10 * * * *' }, { ...env, CALENDAR: kv, CALENDAR_URLS: 'https://feed.test/a.ics' });
+    return puts.length;
+  };
+  const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
+  assert.equal(await run({ updated: ago(20), calendars: 1, errors: [], events: [] }), 0); // unchanged, recent
+  assert.equal(await run({ updated: ago(90), calendars: 1, errors: [], events: [] }), 1); // unchanged, hourly heartbeat
+  assert.equal(await run({ updated: ago(5), calendars: 1, errors: [], events: [{ uid: 'gone' }] }), 1); // changed
+  assert.equal(await run(null), 1); // first run
+});
+
+test('messages: posts and dismissals are pushed to connected frames at once; expiry sets an alarm', async () => {
+  const r = fakeRoom();
+  const sent = [];
+  r.sockets.push({ send: (t) => sent.push(JSON.parse(t)) }); // a connected frame
+  const menv = { ...env, MESSAGES: r.ns, AGENT_TOKEN: 'agent' };
+  const res = await worker.fetch(new Request('https://frame.test/api/messages', { method: 'POST', headers: { Authorization: 'Bearer agent' }, body: JSON.stringify({ title: 'Hi', ttl_minutes: 5 }) }), menv, {});
+  const { id } = await res.json();
+  assert.deepEqual(sent.at(-1).messages.map((m) => m.title), ['Hi']);
+  assert.ok(r.alarms.at(-1) > Date.now()); // wakes to remove it when it expires
+  await worker.fetch(new Request('https://frame.test/api/messages/' + id + '/dismiss', { method: 'POST', headers: { Authorization: 'Bearer k' } }), menv, {});
+  assert.deepEqual(sent.at(-1).messages, []);
+  assert.equal(r.alarms.at(-1), null);
+  // The socket route needs the frame key (in the URL) and a WebSocket upgrade.
+  assert.equal((await worker.fetch(new Request('https://frame.test/api/messages/live?key=wrong'), menv, {})).status, 401);
+  assert.equal((await worker.fetch(new Request('https://frame.test/api/messages/live?key=k'), menv, {})).status, 426);
+});

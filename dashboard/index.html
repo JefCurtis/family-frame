@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Lay out at 1280 CSS px wide: the 1920×1080 FRAME156 shows that at 1.5× (1280×720), 10" frames at 1×.
+       No initial-scale: Android WebView would pin the scale to 1 and lay out at the full panel width. -->
+  <meta name="viewport" content="width=1280, user-scalable=no">
+  <title>Frame</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <div id="app"><p id="boot" style="margin:48px;font:22px sans-serif;color:#6e6e73">Starting…</p></div>
+  <script>
+    // Wall display self-healing: if the bundle failed to start, keep reloading until it does.
+    // A script error is shown on screen instead, so the frame can be diagnosed without a cable.
+    (function () {
+      var boot = document.getElementById('boot');
+      function fail(msg) { window.__failed = true; if (boot) boot.textContent = 'Couldn’t start: ' + msg; }
+      window.addEventListener('error', function (e) { fail((e.message || e.type) + (e.filename ? ' @ ' + e.filename.split('/').pop() + ':' + e.lineno : '')); }, true);
+      window.addEventListener('unhandledrejection', function (e) { fail(String(e.reason && e.reason.message || e.reason)); });
+      setTimeout(function () { if (!window.__booted && !window.__failed) location.reload(); }, 10000);
+    })();
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

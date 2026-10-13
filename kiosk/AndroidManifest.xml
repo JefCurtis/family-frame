@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-screen WebView kiosk for the dashboard. Registers as a Home app so the frame boots into it. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.huntsyea.frame">
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <application
+      android:label="Frame"
+      android:hardwareAccelerated="true"
+      android:allowBackup="false"
+      android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+    <activity
+        android:name=".MainActivity"
+        android:launchMode="singleTask"
+        android:stateNotNeeded="true"
+        android:windowSoftInputMode="adjustPan"
+        android:configChanges="orientation|screenSize|screenLayout|keyboard|keyboardHidden|navigation|uiMode|density">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+        <category android:name="android.intent.category.HOME" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

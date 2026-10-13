@@ -1,0 +1,18 @@
+# Copy to .dev.vars for local dev. In production use `npx wrangler secret put <NAME>`.
+# Google: Settings → your calendar → Integrate calendar → "Secret address in iCal format".
+# iCloud: Calendar app → right-click the calendar → Share Calendar → Public Calendar → copy link.
+CALENDAR_URLS="https://calendar.google.com/calendar/ical/.../basic.ics webcal://p00-caldav.icloud.com/published/2/..."
+# Any long random string. The frame opens the dashboard once with ?key=<this>.
+DASHBOARD_KEY=""
+# Optional: IANA zone for event times that carry no zone at all (rare). Defaults to the feed's own.
+# DISPLAY_TZ="America/Chicago"
+# Todoist → Settings → Integrations → Developer → API token.
+TODOIST_TOKEN=""
+# Optional: weather location (rounded is fine) and unit.
+# WEATHER_LAT="40.71"
+# WEATHER_LON="-74.01"
+# WEATHER_UNIT="celsius"
+# Optional: iCloud Shared Album with "Public Website" on, for the idle slideshow.
+# ALBUM_URL="https://photos.icloud.com/shared/album/<token>"
+# Optional: token AI agents use to post messages and save recipes (any long random string).
+# AGENT_TOKEN=""
