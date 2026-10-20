@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "photo-frame-dashboard",
+  "name": "family-frame",
   "main": "./worker/index.js",
   "compatibility_date": "2026-10-01",
   // The Vite plugin builds the dashboard into the asset bundle; the Worker handles /api/*.

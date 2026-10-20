@@ -5,13 +5,13 @@
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
   <application
-      android:label="Frame"
+      android:label="Family Frame"
       android:hardwareAccelerated="true"
       android:allowBackup="false"
       android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
     <service
         android:name=".NavigationService"
-        android:label="Frame navigation"
+        android:label="Family Frame navigation"
         android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
         android:exported="true">
       <intent-filter>

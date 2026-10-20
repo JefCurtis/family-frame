@@ -4,7 +4,7 @@ Any AI agent or script can put a message on the kitchen frame. It covers the who
 (dashboard or slideshow) until someone taps its X. Several messages queue up, oldest first.
 
 ```sh
-curl -X POST https://photo-frame-dashboard.<your-subdomain>.workers.dev/api/messages \
+curl -X POST https://family-frame.<your-subdomain>.workers.dev/api/messages \
   -H "Authorization: Bearer $AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title": "Dinner is ready", "body": "Come down when you can.", "from": "Kitchen agent", "ttl_minutes": 60, "speak": true}'

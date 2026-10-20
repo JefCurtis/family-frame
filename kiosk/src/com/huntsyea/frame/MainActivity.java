@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
     @Override public void run() {
       escapeArmed = false;
       new AlertDialog.Builder(MainActivity.this)
-          .setTitle("Frame")
+          .setTitle("Family Frame")
           .setItems(new String[] {"Reload dashboard", "Android settings"}, (d, which) -> {
             if (which == 0) web.reload();
             else startActivity(new Intent(Settings.ACTION_SETTINGS));

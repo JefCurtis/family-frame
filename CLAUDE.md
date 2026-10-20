@@ -1,4 +1,4 @@
-# Photo Frame Dashboard
+# Family Frame
 
 A dashboard web app for a rooted Android photo frame. Read `docs/research.md` before changing
 `dashboard/`.

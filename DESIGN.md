@@ -1,5 +1,5 @@
 ---
-name: "Photo Frame Dashboard"
+name: "Family Frame"
 description: "Flat iOS-style widgets for a household wall display, in daylight and after dark."
 colors:
   light-ground: "#f2f2f7"
@@ -182,7 +182,7 @@ components:
     padding: "0 72px"
 ---
 
-# Design System: Photo Frame Dashboard
+# Design System: Family Frame
 
 ## Overview
 

@@ -19,7 +19,7 @@ nothing reaches Todoist.
 ## Saving a recipe from an agent
 
 ```sh
-curl -X POST https://photo-frame-dashboard.<your-subdomain>.workers.dev/api/recipes \
+curl -X POST https://family-frame.<your-subdomain>.workers.dev/api/recipes \
   -H "Authorization: Bearer $AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title": "Sheet-pan lemon chicken", "from": "Claude", "time": "40 min", "servings": 4,

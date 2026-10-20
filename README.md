@@ -1,4 +1,4 @@
-# Photo Frame Dashboard
+# Family Frame
 
 A glanceable family dashboard for a low-cost Android photo frame. It combines the clock, weather,
 family calendars, Todoist lists and an iCloud photo album in one touch-friendly display.
@@ -47,8 +47,8 @@ partition. See [`docs/frame.md`](docs/frame.md) for the tested PF1007L setup.
 ## Local development
 
 ```sh
-git clone https://github.com/JefCurtis/kitchen-frame.git
-cd kitchen-frame
+git clone https://github.com/JefCurtis/family-frame.git
+cd family-frame
 cp dashboard/.dev.vars.example dashboard/.dev.vars
 cp dashboard/wrangler.example.jsonc dashboard/wrangler.jsonc
 cd dashboard
