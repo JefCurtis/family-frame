@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:224de126276455205264aec34e1c13caf5b3707e7003fb306d547b5ca65f621b",
+  "pageVersion": "sha256:b9cb02d65270db9a7753e45a5e49dbe7de3f2daede163744c93a2a2fadd3ea17",
   "claims": [
     {
       "id": "claim_0eb699c6eb754973b1731df4bb0d335e",
@@ -167,10 +167,124 @@
           "version": "repo-lines-v1:sha256:e7f9fc1018d3f52160365c20acb8f145c38e76298fd2ead6cceb852c0312be6b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzM2FlNzZlZWU5YTljYWYyNzQ4ZmE1MDFhZDk1OWU3MTQxNzA4ZmU4N2NjYzRiNmMxZDBmNWJkOTgxMWMzMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyMTZlMzkwODBmMDA2MDE1MjVhM2I2ZDk5MGI5ZGVkYmYwNmM4MTk0OTk5ZDZiMjY2ZTJmZTJkZjg5NjQwNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmOWI5NjljOGU5NWFiYjE3YzZkOWFhODA2M2UzZWUzMDk0ZTk1MGVlYTdiZDRmMTM2MGE4ZGJiNzM0OTdiYTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVkYWFiZWFmZWQ1ZDIxZjhlYzZjY2U2OTk1Y2M2MzQ2ODhmNzdmZWUwZmNhZDdjNGNkNjI5NGEyYzExNWRjMWMifQ"
         }
       ]
+    },
+    {
+      "id": "claim_3080ff3b41f4478289181ebf166dbb49",
+      "statement": "App.svelte renders a top bar with Home, Calendar, Groceries, Tasks, Recipes segments, and Music only when Home Assistant is configured; the right side shows the current time (except on Home), weather, a slideshow play button, and a Settings gear.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/App.svelte#L17-L75",
+          "version": "repo-lines-v1:sha256:e319db03ae02a4dee3e29d3524369769c356ddd8cf44b7ee31d4d250d6c7ba10:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkZDNkNmQyMTQzYjVhNWM1OTYzMjJlZjRmMWFiNDMzMGFkYTg2M2Q3NzI3ZjJmNWQyMmU3ZWZiMGRmMGJlZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlYjUxNjU4YzRmZjAzNWZlY2RlYjRjMjY5ZWZiMmQzM2E2N2FjOTkyOGEyYTZjMmQyZDlhMTQ2MzBhMGVjMzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5MDYxYWVkYTA5ZjNhZWQ1OWQ1NjgwNzRlMWYxYjExOTRhODZkNTk3NDllZjE2OTkzODE4MTFkZjYzYzNiZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5ODk1NzI5NzAzMDVhOGFlMTgzZDM1MTk3NTc3YzRjMTUxMDE5MGEwZDIzYTFlOTNiODFhMmZlZDk4MjVlOTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9c5c26c77a0442729b34134eb2ad27c7",
+      "statement": "The Calendar tab remembers Week or Month view in localStorage, pages through five weeks or two months, and the next-page badge counts only non-holiday events beyond the current page.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/views/Week.svelte#L7-L47",
+          "version": "repo-lines-v1:sha256:9fc32a402a3e1149a1b2c72ab954ccc1a045bde7d4693de8ee5391267dea26df:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhM2VmNzdmYTUyNGZkNWU1ZTNkNjQzNzc0OGY4ODkzZTkyM2UwODk3ODkyYTUyZDI4NDgyOGRiMDM2ODZhM2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwNTYzMDRiMGVlYWJkODhhZDRjYmRkNjBiZGY0NjY1MWFkODU3YWQxZTAxMDRlNDJhYmZmNmIwNDNhZThlYTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE3MTE4MGQwNzlkODExMTdkNDk1OTQyZjUwOTNlMDYzNzY5N2NmNzVkOTJmODJhMGMwNTM5ZWVhNmNmOGY5MjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiYWMxZTMxMDM0NWNhNzM2ZmY5OGU3MTcyYTdiMDBhZDZlYjNkODc1ZTc0ZDRiZWVhZDM2MzY4N2JiMDNkNTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b3c5e4d863874dcbb6076f36b014547f",
+      "statement": "The Month grid is rebuilt only when the calendar day changes, using a derived dayKey that updates only when the date differs.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/views/Month.svelte#L10-L31",
+          "version": "repo-lines-v1:sha256:6bf8cb9bce5846ca5e44f91c5d7147108f463969d8e0e3457dcd5f62d7e71680:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5NzI1ZGQyNGNkMTg5YmQ5ZTRlYmY1MGRkNDE2MmMzNWRhNjhkZGI3ZDg1MDg1NzQ1N2I1NWFiMWE3MDgwYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzMGZmYzNjODRjN2E4ODQ3YTEyNjIyNWZiNmMxMGQ0M2UwYTUzNzFiNWQxYjNhODcwYmEyYWRkZmVkMTFlZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg2OGU4ZmRmY2UwZTUyZmE1ZTlkMmQxYmMxOTMzYTAyOThjNDVmNzg3OGI4M2NhNWE0Y2M1OGNlNTkyNjVlNGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkwMTBiZTcxOWRjMzdiODZkMTY5YTNkYTI4ZGJiZDk3NzgzYTMzZGFhODIzNTIyYjE1MmVjODQ1ZGUyNjFhODIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_51cd6ea841124754ae4771754123a7d5",
+      "statement": "List.svelte parameterises Groceries as a single multi-column flow card and Tasks as a horizontal board of section cards; both preserve Todoist section order and place unsectioned items first.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/views/List.svelte#L7-L26",
+          "version": "repo-lines-v1:sha256:ae6643b8b59f36584da37be77fe50ff8db34f5fd7f01232ce1e3e52ca158756d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzMGQxNDFhMDNjNjVkN2M3ZTc5YTY5YmMyNDI3NGZhYWM0MjE1MzI3YmY4MjljZmE2ZjI2ZTJjZjhiNTIyMjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4ZGVkNDIyZDQ3NzQ2MWU1ZWM3Nzc4MmQwZGQxMzNhMTlkNDNjNzgwMzdkNjlhNTA2MmE2MDgwNDRjN2IyM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4OTUzMzgyMDQzMzdjNzk4MWJhMzQzZGNlYTQ3YzQ2OWI4NzExNmY1MDA0Zjk1YTRjNmI1N2ViMjNkZDExMzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_619489cb6df34c9f8d5537d04cb9b038",
+      "statement": "Recipe cards use lazy image loading, async decoding, fade-in on load, and content-visibility: auto; the Explore/Saved list stays in the DOM with visibility:hidden while a recipe page is open to preserve scroll position and decoded images.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/views/Recipes.svelte#L10-L15",
+          "version": "repo-lines-v1:sha256:fc303c54a12799d8bfc4e29165c1666b31795ba2d0fbe066f2c0fd1b07bfe373:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTM0MTViYmE0ZTJmODk3ZDEzMTA0MGViOWRmNDJkYmNmNjMwZjI2MTM0YjMwOTA4Y2JkYWE4ZTgyOTEwNmQxZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2Q5ZmE1NTE2ZGE2MmU4MDQxM2IzMWY2ZDk4Zjg2NzIzYzA3MzRlMjRhZDNhOTVkZjllYWJkMWFmYmExZWNlZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjU5NDYwZmFjNTM4MWE0OTRmYjMxOTNhMDg1YWYxNzQyYzM3ODI1YTg0NTQ4YTg0ODRmNDIxN2U2Y2JkYjkzNCJ9"
+        },
+        {
+          "resource": "repo://dashboard/src/views/Recipes.svelte#L104-L181",
+          "version": "repo-lines-v1:sha256:52713c275a1f13ef137d92ada1d2487abed55b48aa7842f6cd6668e37aea208a:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxNmY0OGQ3MmMwMDY1NWU4MzI3YWRjOWVlZTAyMTY5MGIxM2U3YTMyNTg5M2QxZTRjNzMzYzQyMDU2ZTAzZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5YjgyY2RjNDMyODg0MWNhZjM4YTVmOGZhODBkNDlkNzQ1NWY1NzFjMzE1NzNmNzI0MzM2YTFmZmRkMjE2NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkMzVmOTRlNTdmNzUyZjUyZGI3ZjFmZDQ3NWUzMGJkZGNlZTAxNDhhZTc1ZDFhMTM1YTQ1ZTMyNDJiMTFlZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3ZDRhOGQwOWRhZDBkODFhOTFlZmIzZGUwMWE4ZjU4OWFkYmU1YjIzZGFmZTNkOTkwZjk3MTZiMzliNzc1MWYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8e98a900b3474ddc9c626b8ca267c40f",
+      "statement": "Music.svelte extrapolates playback progress once per second while a player is playing and visible, and throttles volume-slider service calls to at most one every 250 ms.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/views/Music.svelte#L22-L44",
+          "version": "repo-lines-v1:sha256:5021f7c4b4c1ffafd4e80fe2726ea66a435b19bd8d0f3c122e9b64844c640fbe:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5ZTExMGFlNjczZDVmOTViNmE5ZTY4NmYzNjc1ZWFhYWNjZGYyM2M1NTM0MzM4ZGMwODdiZWRlZDE3M2MzYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxZDJlMGJiYWU5MjU4MjQzNDczYmRjNDgyZDlkMDkxY2NkYjU1ZjAxMzQ2OTg1NmJkMTFlMWZiZjlhNDhhYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1OWMyNWJmMDE0NjQ0MjJmYTQ2NTcwMDBiMjAzZGY5NGY2MTIwOWRmNDUxZDI5MWMzZmY4NzY0YTcwZWNjNzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_94971d22ce1b476e8fc74e5b406ed5ff",
+      "statement": "Ambient.svelte pauses the photo slideshow while an agent message covers the screen, and dims text/photos at night (or hides photos entirely when night photos are turned off).",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/views/Ambient.svelte#L17-L42",
+          "version": "repo-lines-v1:sha256:79782ceac5f0d743d08e3e249dd67a3cbbf99e7eacaf3d31f743880168ff747b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4NDNjMjhkZTE4NzAzNGM5NTVjMDUyNWE4YmMzZTcyNDJjNGIzMDU3NDU0OWIyM2QwOWY4NTQ2MWYyODJkMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzN2E3M2FmYjRhYjlkZmQ5YTY5ZTRlYzFlMWM4N2M5YjQxNDkyYzMzZTY0ZDVlZmU0YzU3OTZkZDQ1MjNmMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlZjA2MGQyNmU0YjNmYWU5MjhiOTIzM2M1MGZkYjg0ZGJhZmUzMzM0MDA3MTYwNjA5ZGQ4NmJkYTQ1NTVlOGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9f67f7504dbf4495901575b1368155ac",
+      "statement": "NowPlaying.svelte on Home opens the Music tab when tapped, while its play/pause button toggles playback without leaving Home.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/components/NowPlaying.svelte#L1-L23",
+          "version": "repo-lines-v1:sha256:32757a1df76855da95351f1076029cc9861dd12643f6cb181c132db17beae4a9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmMTRhMzIxMjBjMDM0ZWFmYzc2ZDQxMzgxNjZiZWI4YzdhOTY4YTM2MzNhMDAwOGU3NGY0MDZkZDlkMjEyNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlYjUxNjU4YzRmZjAzNWZlY2RlYjRjMjY5ZWZiMmQzM2E2N2FjOTkyOGEyYTZjMmQyZDlhMTQ2MzBhMGVjMzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlOWI2NjMyYjU1YjYyOTkyOGZlOGRjOWMzMzlhY2VhMDIwZGQwNmVhNDBjMjU0OWM2NzFlN2FjZDM3ZGU2ZmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2b9f51bc896c46acb2b9f449c577ac1b",
+      "statement": "Settings.svelte exposes controls for theme, clock colour, idle timeout, night photos, kiosk brightness, read-aloud speaker, demo mode, and a manual calendar reload.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/components/Settings.svelte#L10-L107",
+          "version": "repo-lines-v1:sha256:d22d46d931b52fea3310291d6539839e5478b17f2a117d08fba54f397a033b61:eyJzZWxlY3RlZExpbmVDb3VudCI6OTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxNGUxZDFlOWI5NWY5YzAxMDM0MThhMjczNTZiYTJkMmE0Y2VmNzQ5MTE1YWVlOTk4NGJlYTU5M2ZkODg1MmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlNTYwNDZkMzBmZmM0OGIyYjQ5ODgxNTI2MjkxZTc4ZWM4NGE0NDlhOTJkZTU4YjE0ZTU2ZTg5MmUyNzdkMGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM1Nzc4NDllM2FiMjgzZTVmN2QyOGViZmQ1MTg2NjUwMjhmOGE0YjVhMmVkMTI4MzcyZjg4OGUwMTgxNjFjZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5MWE2YWYzZGVjYjVlODI4ODZhNGI1YzcwMmM3ZDI1NzYyMGM5NzkwZmVmZjVkZmUzODU2YTNmYzI0ZjdmZmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b545e82351e44721b1982d4934c2cff1",
+      "statement": "TaskRow fills the completion ring on tap, delays calling completion by 350 ms for feedback, and relies on the caller to restore the item if the completion request fails.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/components/TaskRow.svelte#L13-L27",
+          "version": "repo-lines-v1:sha256:35005cf4f480275d5b187e0910f402e26e3d3f5e96f764007d1a5b9639ed8763:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4MTM5YzQ2ODY3ZGQ3MzVjMGQyNjc1YmQwMmYwMWIyNjBjZWZjNjE1MDY3YTA4M2VhMjM5NGI2N2JiODRkODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjZmRkODhmNzZjNzAxMTE5MWNkOWIyNGE1YmM2M2FkYTRjNmUwYzlkOGFiZTg4OGU5NmU1ODQzMGU3M2ZlMDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxYzE1ZGI2OGI2YmVlMjYxNzM1NWI3YWU3MjQ1MjRhOWI3OTk0M2RjZDFhYThkNDE0YzRmMzY3OTlhMzU0OWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYWEwZTAyYzgyOTU4MWE2ZWE5YTRkNjJhYTU3ODg1NTcwZDIyYTMxN2UzY2Y2YmZmMDllMGFhZmM2ZGZhOGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f55d03e1f22b4fe28be7ce97149e3638",
+      "statement": "EventRow marks a currently-happening event with a bold 'Now' label and shows 'All day' or the time range, optionally prefixed with the event's day name.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/components/EventRow.svelte#L1-L15",
+          "version": "repo-lines-v1:sha256:ecea60176c7085ffe6790060ffeeff4a084d32d4247a962bdca0ccc624c6bf69:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmMTRhMzIxMjBjMDM0ZWFmYzc2ZDQxMzgxNjZiZWI4YzdhOTY4YTM2MzNhMDAwOGU3NGY0MDZkZDlkMjEyNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlYjUxNjU4YzRmZjAzNWZlY2RlYjRjMjY5ZWZiMmQzM2E2N2FjOTkyOGEyYTZjMmQyZDlhMTQ2MzBhMGVjMzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhMzRlYzEwMzQ3ZjY1YTk4Mjc0MTE5NDRkNGUyZTA0ZGJkOWEzNWRmZjNjOWQ2ZmIyOWQ3MzhmMjNkYjE3MGEifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-13T17:09:19.129Z"
+    "at": "2026-10-20T13:29:46.072Z"
   }
 }

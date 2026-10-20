@@ -3,6 +3,9 @@ type: guide
 title: Quickstart
 description: Entry point to this repository's wiki - what the photo-frame family dashboard is, how to run, test and deploy it, and which page to read for each kind of change.
 tags: [quickstart, overview, routing, getting-started]
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-20T13:29:46.072Z
 sources:
   - id: openwiki-source-8037e2358a2c4f9b2c722a11
     resource: repo://AGENTS.md
@@ -13,9 +16,6 @@ sources:
   - id: openwiki-source-0d4db84e2b7fee7556be759e
     resource: repo://dashboard/wrangler.jsonc
 generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
-verified:
-  - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
 ---
 
 # Quickstart

@@ -5,7 +5,7 @@ description: The Recipes tab browses TheMealDB categories and random picks, stor
 tags: [recipes, themealdb, kv, groceries, agents, svelte]
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
+    at: 2026-10-20T13:29:46.072Z
 sources:
   - id: openwiki-source-e12fdae11ea7713285efd699
     resource: repo://dashboard/src/lib/format.js

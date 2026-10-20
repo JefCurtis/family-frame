@@ -18,10 +18,10 @@ sources:
     resource: repo://dashboard/worker/calendar.test.js
   - id: openwiki-source-761c8b9c5f5e1234a74d94a4
     resource: repo://dashboard/worker/index.js
-generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
+generated: { by: "openwiki/0.7.2", at: "2026-10-20T13:29:46.072Z" }
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
+    at: 2026-10-20T13:29:46.072Z
 ---
 
 # Calendar feed
@@ -103,6 +103,17 @@ This is the piece most validated by the test fixtures: a weekly practice in CDT,
 since 1995, a floating farmers market in the calendar's default zone, and a DST change where the
 same wall-clock time shifts from 12:00Z to 13:00Z.
 
+### Recurrence expansion details
+
+`expand` calls `prefilter` first, registers every `VTIMEZONE` with `ICAL.TimezoneService`, then
+splits `VEVENT` components into standalone events, recurring masters, and `RECURRENCE-ID`
+exceptions. Exception keys are stored per UID; later, when a recurring master produces an
+occurrence whose instance key matches an exception, that generated occurrence is skipped so the
+exception event stands in its place. Cancelled components (`STATUS:CANCELLED`) are dropped during
+emission. The iterator starts at `fastForward(event, from - dur)` so the first candidate already
+covers the requested window even for very old rules. Expansion stops when the next candidate is
+more than one day past the window, and each master is capped at 20,000 occurrences.
+
 ### `fastForward(event, from)`
 
 ical.js walks recurrences from `DTSTART`. A daily event from 1995 would require thousands of
@@ -170,6 +181,9 @@ The Week view uses the `holiday` flag to leave holidays out of the "more events 
 
 The Month view derives a day key from the minute clock so its month grid rebuilds only when the
 date changes, not every minute.
+
+The Ambient/clock screen also calls `eventsOn` to show the next upcoming timed event for the
+current day.
 
 ## Tests as the specification
 

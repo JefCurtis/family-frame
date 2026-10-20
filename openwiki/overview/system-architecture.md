@@ -1,11 +1,8 @@
 ---
 type: architecture
 title: System architecture
-description: End-to-end view of the family photo-frame dashboard - an Android kiosk WebView on the frame, a Svelte app and API served by one Cloudflare Worker that proxies calendars, weather, Todoist, iCloud photos and TheMealDB and hosts the agent message room, plus a direct LAN link to Home Assistant.
+description: End-to-end view of the family photo-frame dashboard - an Android kiosk WebView on the frame, a Svelte 5 app and API served by one Cloudflare Worker that proxies calendars, weather, Todoist, iCloud photos and TheMealDB and hosts the agent message room, plus a direct LAN link to Home Assistant.
 tags: [architecture, overview, cloudflare-workers, svelte, android, kiosk]
-verified:
-  - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
 sources:
   - id: openwiki-source-a2371d6362e5db4bc834ad03
     resource: repo://CLAUDE.md
@@ -35,7 +32,10 @@ sources:
     resource: repo://kiosk/src/com/huntsyea/frame/MainActivity.java
   - id: openwiki-source-3a44815832a872f4778f822b
     resource: repo://SECURITY.md
-generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
+generated: { by: "openwiki/0.7.2", at: "2026-10-20T13:29:46.072Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-20T13:29:46.072Z
 ---
 
 # System architecture
@@ -49,7 +49,7 @@ The project turns a rooted Android photo frame into a kitchen wall dashboard: cl
 │ kiosk app com.huntsyea.frame (HOME launcher, WebView)    │
 │   └─ Svelte app (dashboard/src) ───────────────┐          │
 │        │ https + key            │ ws:// on LAN  │          │
-└────────┼─────────────────────────┼─────────────────┘          
+└────────┼─────────────────────────┼─────────────────┘
          ▼                       ▼
   Cloudflare Worker            Home Assistant (+ Music Assistant, Piper TTS)
   (dashboard/worker)
@@ -80,8 +80,8 @@ The project turns a rooted Android photo frame into a kitchen wall dashboard: cl
 **Work around the device instead of fighting it.** The deployed frame is a Pastigio FRAME156 (Android 8.1, WebView 106, Rockchip RK3326, ~1 GB RAM, Mali GPU, 1920×1080 shown as 1280×720 CSS px at DPR 1.5, Wi-Fi around 1 Mbit/s, no battery-backed clock). The code also still respects the older upstream floor (Android 6, Mali-400, 1280×800 at DPR 1). Because of those limits:
 
 - The UI is a small Svelte 5 bundle with flat CSS, built for Chrome 106, laid out at 1280 CSS px, mounting only the visible view.
-- Photos are proxied, cached in KV and resized once for the screen; the next slide is decoded ahead of time.
-- The kiosk keeps retrying through the 2008 boot clock and the page reloads itself if it fails to start.
+- Photos and saved-recipe images are proxied, cached in KV and resized once for the screen by the `IMAGES` binding; the next slide is decoded ahead of time.
+- The kiosk keeps retrying through the 2008 boot clock and the page reloads itself if the bundle fails to start.
 - Every feed is polled only while visible, one request at a time, and unchanged data does not re-render; messages are pushed over a WebSocket instead of polled.
 
 `CLAUDE.md` carries the actual numbers and performance rules; the full device record and undo commands are in `docs/frame.md`.
@@ -95,6 +95,7 @@ The project turns a rooted Android photo frame into a kitchen wall dashboard: cl
 `kiosk/src/com/huntsyea/frame/MainActivity.java` builds a full-screen WebView that loads the dashboard URL, keeps the screen on, and registers as the HOME launcher so the frame boots straight into it. Key responsibilities:
 
 - **Boot resilience.** The frame has no battery-backed clock, so power-up starts at 2008 until Wi-Fi time sync. SSL failures therefore happen on first load; the kiosk never bypasses certificates but schedules a 10 s retry and runs a 30 s watchdog that reloads if the page never finishes.
+- **Page-level self-healing.** `dashboard/index.html` adds its own 10 s watchdog: if the Svelte bundle never sets `window.__booted`, the page reloads, and script errors are shown on screen so the frame can be diagnosed without a cable.
 - **URL storage.** The dashboard URL is set once over ADB (`adb shell am start -n com.huntsyea.frame/.MainActivity -d '<url with ?key=>'`) and is persisted in Android shared preferences across reboots.
 - **Mixed-content bridge.** `WebSettings.setMixedContentMode(MIXED_CONTENT_ALWAYS_ALLOW)` lets the https page reach plain `http://` Home Assistant on the LAN; the JavaScript bridge `window.FrameKiosk` exposes brightness control and is only meaningful inside this WebView.
 - **Escape hatch.** Holding two fingers still for 2 s opens a dialog to reload the dashboard or open Android Settings.
@@ -105,9 +106,9 @@ The project turns a rooted Android photo frame into a kitchen wall dashboard: cl
 A Svelte 5 runes app (no SvelteKit) built by Vite with `chrome106` / `chrome61` targets. It is mounted by `main.js` and bootstrapped from localStorage.
 
 - **Authentication.** `src/lib/api.js` stores the key passed as `?key=` in `localStorage` under `frame-key`, then sends it as a bearer token. Image and WebSocket GET requests carry the key in the URL because `<img>` and `WebSocket` cannot send custom headers.
-- **State and polling.** `src/lib/state.svelte.js` owns the feed `$state` objects and the pollers. `start()` kicks off the minute-aligned clock, calendar (5 min), weather (15 min), Tasks (1 min), Groceries (1 min only while its tab is open), and photos (5 min only while the clock screen is up). Messages use a WebSocket; a 1 min HTTP fallback runs only while the socket is down.
+- **State and polling.** `src/lib/state.svelte.js` owns the feed `$state` objects and the pollers. `start()` kicks off the minute-aligned clock, calendar (5 min), weather (15 min), Tasks (1 min), Groceries (1 min only while its tab is open), and photos (5 min only while the clock screen is up). `single()` collapses overlapping requests for the same feed and `changed()` skips re-renders when the data is unchanged. Messages use a WebSocket; a 1 min HTTP fallback runs only while the socket is down.
 - **Idle and slideshow.** After a configurable idle timeout the app unmounts the dashboard, sets `ui.idle = true`, and renders `Ambient` with a clock, date, weather, next event, now playing and the family photo slideshow. Tapping wakes it back to Home.
-- **Home Assistant.** `src/lib/ha.svelte.js` connects directly to `ws://<home-assistant>:8123/api/websocket` from the browser; the URL and long-lived token live only in `localStorage` (`frame-ha-url`, `frame-ha-token`). The Music tab only appears when a token is present.
+- **Home Assistant.** `src/lib/ha.svelte.js` connects directly to `ws://<home-assistant>:8123/api/websocket` from the browser; the URL and long-lived token live only in `localStorage` (`frame-ha-url`, `frame-ha-token`). The Music tab only appears when a token is present. The same connection is used to read new agent messages aloud through a chosen TTS speaker, but not during quiet hours (10 PM–7 AM) and not for messages marked `speak: false`.
 - **Demo mode.** Settings → Demo mode swaps in invented data from `demo.js`, never writes to Todoist, never shows family photos, and suppresses agent messages.
 
 ### 3. Cloudflare Worker (`dashboard/worker/`)
@@ -117,7 +118,7 @@ One Worker serves both the built app and the API. `wrangler.jsonc` wires:
 - `ASSETS` for the Vite-built static files;
 - `CALENDAR` KV for calendar, photo list, photo bytes, saved recipes and recipe images;
 - `MESSAGES` Durable Object binding to the `MessageRoom` class;
-- `IMAGES` for one-time image resizing;
+- `IMAGES` for one-time image resizing before KV storage;
 - a `*/10 * * * *` cron to refresh the calendar.
 
 `worker/index.js` routes:

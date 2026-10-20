@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:d48aa6627314b23e3febaaf2af659cf8bbd800f6e093004339899d8f3c814be9",
+  "pageVersion": "sha256:7dc987b478dedb3fb5e5ef0ce309c296be096f5365d2c409da6d73dd05f9e7d6",
   "claims": [
     {
       "id": "claim_ef1b1fedf37544eba6ce52d3bce5fcbe",
@@ -41,20 +41,6 @@
       ]
     },
     {
-      "id": "claim_d2a4207bfb0642cd80e471788b6905a6",
-      "statement": "Secrets are DASHBOARD_KEY, AGENT_TOKEN, CALENDAR_URLS, TODOIST_TOKEN and ALBUM_URL (plus weather coordinates and optional DISPLAY_TZ); an unset DASHBOARD_KEY disables the key check for development.",
-      "evidence": [
-        {
-          "resource": "repo://dashboard/worker/index.js#L14-L22",
-          "version": "repo-lines-v1:sha256:07aba8d5a2c2eef79e1f2fa727097d84209326f509b97c3f85c3f684239f5b2c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTAxZWFkOTM2YTIyODFkNTNkY2MwNjRiN2UyYTJhYjBkNTNiOTJlZjNlZjdiMzRiNjY4NjczMDA3ODk1Yzg2MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDFkYmFmNGFjODY3MzE2Njc5MjFhMjEyOTQ5Y2EwNGI2NmFkZWVkNTY0M2U5MmE2NTA3Mjg3OGM5NTlmZTRkZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjQ4ODhmMzI3M2JmMzkyZmY4YzU1ODE1ZWI4Y2NmMmJhODNlMTM3NDM4MGYxZDE5YmQyODYwYzhjZGJjNTIyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2ExZTMxOTUyMDg5YzA5OGI1ODI0N2I2ZDk1MDVjMmJjYzkzODhjNDVkMjEyM2Y4NzhiZTUwODQ0MDdlZTAwYSJ9"
-        },
-        {
-          "resource": "repo://dashboard/worker/weather.js#L1-L4",
-          "version": "repo-lines-v1:sha256:9262c3b91240b1d5ff6b204d422a150ba33494ca33f3e03ebe30a8cf28e8f76c:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDBjMzQ4YWE5MTZhM2M5YmEyMWU2Zjc4MjE2ODA0NTg0ZDA0YzE0MmU2MzBiZjYwYjVjYzM5NGQxNDc5NjJjMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTE3OTc2NWFmOTllNjgyNjA0NzVkZTQwNWMxYTlmM2M3MmY3ZjdkYjI2N2RkMDU3YTZjN2I2NWQyMjgyYjg5NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDRlZmMwZTNhZmY2NDE4ZTkzMzBiMzI3Y2NiMjc2NGVmNzMyZjFhMjQzNDllYzdiMGMwMTExODkxYjE3YWNiOCJ9"
-        }
-      ]
-    },
-    {
       "id": "claim_590e0f1188714a2d97ba859a03a9c16c",
       "statement": "The dev server runs the Worker locally through the Cloudflare Vite plugin, listens on the LAN, and allows *.getbb.app hosts.",
       "evidence": [
@@ -66,21 +52,21 @@
     },
     {
       "id": "claim_a57406e6bd1541ca8c16c54b94ebe112",
-      "statement": "A scheduled GitHub Actions workflow runs OpenWiki daily (and on demand), removes transient run state, and opens a pull request with the wiki changes, failing the job if OpenWiki failed.",
+      "statement": ".github/workflows/openwiki-update.yml runs daily at 08:00 UTC and on demand, installs OpenWiki with optional mermaid/jsdom validation, runs `openwiki code --update --print`, removes transient run state (`openwiki/.run.json`), creates a PR preserving partial progress on failure, and then fails the job if the OpenWiki step failed.",
       "evidence": [
         {
           "resource": "repo://.github/workflows/openwiki-update.yml#L1-L94",
-          "version": "repo-lines-v1:sha256:c845cbc0d5a61ab3f5819d9040cc7bc27c85c03a86b1cfc82eafb7cddf6a0a3e:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2MDI3ODdhZjZkY2MwODM0ZGUxMjFjYmIxY2I5NWY5NDU5YjcyMWVhYjAzNDlmMTA1MDFiOTk2YzFjNzdmZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NzE4ZjA2N2I1ZTVjMWYwOTkxYTZlNzQ3MjZmZTJhMjNkMjY0MzQ1ZTA4ZTRlYWQwNGZhZjczYzI3ZWQ0NDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "version": "repo-lines-v1:sha256:1b8cf262be281eeaaf5ab8375f020c3ab438f8a96972c5736e38ccbe54c53e11:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2MDI3ODdhZjZkY2MwODM0ZGUxMjFjYmIxY2I5NWY5NDU5YjcyMWVhYjAzNDlmMTA1MDFiOTk2YzFjNzdmZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NzE4ZjA2N2I1ZTVjMWYwOTkxYTZlNzQ3MjZmZTJhMjNkMjY0MzQ1ZTA4ZTRlYWQwNGZhZjczYzI3ZWQ0NDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
     {
       "id": "claim_b2f299c51e0b497daf6fd5943b577cb4",
-      "statement": "The OpenWiki workflow uses Ollama Cloud through the OpenAI-compatible provider with the OLLAMA_API_KEY secret and an OPENWIKI_MODEL_ID repository variable defaulting to kimi-k2.7-code, and skips every step with a notice when the key is not set.",
+      "statement": "The OpenWiki workflow uses Ollama Cloud through the OpenAI-compatible provider (`https://ollama.com/v1`) with the `OLLAMA_API_KEY` repository secret and an `OPENWIKI_MODEL_ID` repository variable defaulting to `kimi-k2.7-code`; every step is skipped with a notice until the secret is set.",
       "evidence": [
         {
           "resource": "repo://.github/workflows/openwiki-update.yml#L12-L57",
-          "version": "repo-lines-v1:sha256:6cec92ddff0d60ddd8429329c7992ccd9def9258d1e2cf537b16276e6b40e975:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiY2ZmMGQ0OGMxODNlMmNjZmM0NjVhYjcxYTU0NDVjNTdmOTIyZTRlZGE0NTI1OWMxZTFjMzhmZWY0ZGExMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzYjA2NzUzNmJhYTc4YWQwMWNmYjFlYWM1MWU2OWZlNmM1ZjRkZTVhYzI2M2NlOGIwNDM0NGQ2N2IxYWIxNWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2ZjdkMzdmYjI5NzM5OWZlYTJhNWNlZjFjYzQwMjhjODk5NzlhOTA1MGE5Mjg1NmYwZDk2ZTFjMThiYTE5YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2MTQ3YTkzYWIxMzA1ZDEzN2E0MjdjZTNjNzM4MWZlM2NhY2VmYzkyYzFkOGJmNmVhZWVlOThiMDc5Y2U5MTcifQ"
+          "version": "repo-lines-v1:sha256:e2da3415efe39ea0123746c45a60aba76df4227a39c964d46437fe84b22f25db:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiY2ZmMGQ0OGMxODNlMmNjZmM0NjVhYjcxYTU0NDVjNTdmOTIyZTRlZGE0NTI1OWMxZTFjMzhmZWY0ZGExMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzYjA2NzUzNmJhYTc4YWQwMWNmYjFlYWM1MWU2OWZlNmM1ZjRkZTVhYzI2M2NlOGIwNDM0NGQ2N2IxYWIxNWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2ZjdkMzdmYjI5NzM5OWZlYTJhNWNlZjFjYzQwMjhjODk5NzlhOTA1MGE5Mjg1NmYwZDk2ZTFjMThiYTE5YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2MTQ3YTkzYWIxMzA1ZDEzN2E0MjdjZTNjNzM4MWZlM2NhY2VmYzkyYzFkOGJmNmVhZWVlOThiMDc5Y2U5MTcifQ"
         }
       ]
     },
@@ -128,7 +114,7 @@
     },
     {
       "id": "claim_c8328e4990854219815e4854772bce8b",
-      "statement": "The `.dev.vars`, `.prod.vars` and `.frame.vars` environment files are gitignored so secrets and frame-specific values are never committed.",
+      "statement": "The `.dev.vars`, `.prod.vars`, `.frame.vars` and `.ollama.vars` environment files are gitignored so secrets and frame-specific values are never committed.",
       "evidence": [
         {
           "resource": "repo://.gitignore#L10-L13",
@@ -139,6 +125,6 @@
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-13T17:09:19.129Z"
+    "at": "2026-10-20T13:29:46.072Z"
   }
 }

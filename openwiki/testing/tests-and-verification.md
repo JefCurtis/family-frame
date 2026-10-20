@@ -3,14 +3,13 @@ type: testing
 title: Tests and verification
 description: How the Worker and frontend are verified without touching the physical frame. Node's built-in test runner exercises worker/*.test.js with mocked fetch, KV and Durable Objects, while frontend changes are checked in a headless 1280×720 browser using demo mode and the ?diag overlay.
 tags: [testing, node-test, mocks, fixtures, verification, headless-browser, demo-mode]
-verified:
-  - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
 sources:
   - id: openwiki-source-1749acaa35a5ed1522bc474a
     resource: repo://dashboard/index.html
   - id: openwiki-source-51dca17ef0b6465be67eaf89
     resource: repo://dashboard/package.json
+  - id: openwiki-source-262fee19998c22821ad4184a
+    resource: repo://dashboard/src/App.svelte
   - id: openwiki-source-514f617424296bf803eef9f3
     resource: repo://dashboard/src/diag.js
   - id: openwiki-source-0fdf6b0286494d706603818c
@@ -25,7 +24,10 @@ sources:
     resource: repo://dashboard/worker/fixtures/google.ics
   - id: openwiki-source-fab37fe2bf7e0b41e1a37929
     resource: repo://dashboard/worker/fixtures/icloud.ics
-generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
+generated: { by: "openwiki/0.7.2", at: "2026-10-20T13:29:46.072Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-20T13:29:46.072Z
 ---
 
 # Tests and verification
@@ -40,7 +42,7 @@ From `dashboard/`:
 npm test
 ```
 
-`npm test` runs `node --test worker/*.test.js` (`package.json` scripts). There is no test framework, no Worker runtime and no network: the Worker's `fetch` and `scheduled` handlers are imported directly and called with fake bindings. Everything in `worker/` is written to run under plain Node — for example `calendar.js` is pure functions, and `MessageRoom` only touches Durable Object APIs through its injected `ctx`.
+`npm test` runs `node --test worker/*.test.js` (`package.json` scripts). There is no third-party test framework, no Worker runtime and no network: the Worker's `fetch` and `scheduled` handlers are imported directly and called with fake bindings. Everything in `worker/` is written to run under plain Node — for example `calendar.js` is pure functions, and `MessageRoom` only touches Durable Object APIs through its injected `ctx`.
 
 There are no automated frontend tests. UI changes are verified by building and looking in a browser (see [Verifying frontend changes](#verifying-frontend-changes)).
 

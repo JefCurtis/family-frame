@@ -1,8 +1,11 @@
 ---
 type: data-pipeline
 title: Photos and idle slideshow
-description: How photos from an iCloud shared album reach the frame's idle clock screen - anonymous CloudKit listing, a KV-cached album list and image cache proxied through the Worker, one-time resizing, and the frame's preloaded, paired slideshow.
-tags: [photos, icloud, cloudkit, kv, slideshow, images-binding]
+description: How photos from an iCloud shared album reach the frame's idle clock screen - anonymous CloudKit listing, a KV-cached album list, Worker-proxied and resized images, and a preloaded, paired slideshow behind the Ambient clock.
+tags: [photos, icloud, cloudkit, kv, slideshow, images-binding, ambient]
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-20T13:29:46.072Z
 sources:
   - id: openwiki-source-262fee19998c22821ad4184a
     resource: repo://dashboard/src/App.svelte
@@ -21,9 +24,6 @@ sources:
   - id: openwiki-source-272749880eb665924bb98bdd
     resource: repo://dashboard/worker/photos.js
 generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
-verified:
-  - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
 ---
 
 # Photos and idle slideshow

@@ -5,7 +5,7 @@ description: How the Cloudflare Worker entry point serves the page and assets, a
 tags: [cloudflare-workers, routing, auth, caching, api]
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
+    at: 2026-10-20T13:29:46.072Z
 sources:
   - id: openwiki-source-a735d7910a81a35570838e4c
     resource: repo://dashboard/public/_headers

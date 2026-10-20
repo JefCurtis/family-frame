@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:a3e1d7dfdbb76ae76af44b712b65eece7cab86d8ea34d4f3c054dac7a77e21e4",
+  "pageVersion": "sha256:ab77b363fca98427b2bc650e34119faffa925aad99d41942357bcee65792aa50",
   "claims": [
     {
       "id": "claim_233e19405da34f6da52a9a13d4d9379d",
@@ -119,10 +119,44 @@
           "version": "repo-lines-v1:sha256:b0fbc29d6083d79412ae309d7a2c1be3fec7115c19eb1c90563cfe434fda0551:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTE4OGQzZDliMTdlOWY0MzZmMWYxMTU4NGYxNWRmNmZkZDk3M2YxZDQxMTJmZmIyOGMyNzE4YjkxYTAzMjM5NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGEwNTBkZGJjMzg4OGQwNjBlMTRiMmYwMjk2ZDkwODY0YzY3ZWI0Y2JkMjNjYjVkOTFjNTg5ZjkwMzhmNWRkNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzU4YzJiNjBiZDc0YTQ5Nzc0MDkzMTczYjZjOTExOTMwYzkzZWJiMThlZTA3NzlhZjA1ODA2MzA4ODcyOTJkNyJ9"
         }
       ]
+    },
+    {
+      "id": "claim_75edf65d80674d39b9515c6c102ea5c5",
+      "statement": "Photo preloading downloads and decodes the next slideshow slide in the background via prepare(); pick() returns one landscape or two portrait photos, failed downloads are skipped, and takeSlide() in Ambient.svelte advances every 30 s.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/lib/slides.js#L1-L55",
+          "version": "repo-lines-v1:sha256:33343e5444be360ee31779fb1e33461670f22419b632ae4d34103d8d5f176031:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNTFlNGRjZjdjYTI3NTdlZTdkOTNkM2E2N2E0MWIzZDU0ODVlM2Q1NjAyOTQ4MWVkMTU1OTZjNDVjZjlkY2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://dashboard/src/views/Ambient.svelte#L10-L42",
+          "version": "repo-lines-v1:sha256:ecbf19a6c442035b5bc73c19a4eecb9f5cb89fbd1f7e9c63be32797439e72053:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwN2Q2MTdmOTRkMDQ1MzIwMjNlY2IwYzFjZjdlZjEyNWZiYzk3ZGQzMTg0M2E4MWY1ZDA4YmMwMzFhMTljZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzYTMwMjljZTFkNmYxMmZlMzZlZjY0OWYzNzZmNzM5MjBjMzhkZTU0NjM3NDdlNDE4MTk2NWY0YjVlOWJjMTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlZjA2MGQyNmU0YjNmYWU5MjhiOTIzM2M1MGZkYjg0ZGJhZmUzMzM0MDA3MTYwNjA5ZGQ4NmJkYTQ1NTVlOGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8b82cc3fe0284295acc2cfed5f854c2b",
+      "statement": "The message WebSocket at /api/messages/live pushes agent messages immediately, uses ping/pong to stay alive, and falls back to a once-a-minute HTTP poll while disconnected; new messages are read aloud through Home Assistant subject to quiet hours, speak:false, age under 10 minutes, and a persisted announced set.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/lib/state.svelte.js#L132-L201",
+          "version": "repo-lines-v1:sha256:bf1f177c7942fade080d3f35f15dd69364631f61f8e04084939b72a61f026b05:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhYzEyYmQwZTM0MWQ2NmU5MzJlNjNlMWRlYzA0NGZlMzNhM2JkMDNhMzc4ZDhiYzJkYWE1YTZhYTczNzQ5NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5NDI2NzRhYWM4Y2ZiODNiZDU5MDRmZTQyOGZlYjIyNjEwODEzY2Y2OGY1NjQzNTJiNDM3OTg4ZGMyMTlhY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzNGI2MDhiNjA3YzUxOGM2MjQ1NWQ1MDA0NWQ1NDRmMDVkMjNhYmNhYTJhYzlkZjU1OTBkMmJmZGJhZDY0N2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_55351a3c4394450aaa9c0fa1266365a5",
+      "statement": "The Home Assistant connector reads frame-ha-url and frame-ha-token from localStorage, connects over WebSocket to avoid CORS, authenticates, subscribes to media-player diffs, exposes ha.players and ha.tts, and provides helpers for nowPlaying, announcing, and calling services.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/lib/ha.svelte.js#L1-L140",
+          "version": "repo-lines-v1:sha256:b4ccd2cbb24b85924b97cf46a62d87ef7cba9f69ba826279ce9503b7068b1a25:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjNDc4MWI3YTJkZWVkYzNiNjIyOTZjNDBmZTRhNzY5MjJmNDFkODRiZDk0M2U3OGI4MjEyY2I0NzNmZDA0ODA4IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-13T17:09:19.129Z"
+    "at": "2026-10-20T13:29:46.072Z"
   }
 }

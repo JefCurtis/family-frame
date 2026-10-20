@@ -1,11 +1,11 @@
 ---
 type: architecture
 title: App shell, state and polling
-description: How the Svelte 5 dashboard boots on the frame, manages shared state, polls each feed only while something needs it, and handles idle, slideshow, settings, demo mode and the small DOM.
-tags: [svelte, state, polling, localstorage, idle, demo-mode, boot]
+description: How the Svelte 5 dashboard boots on the frame, manages shared state, polls each feed only while something needs it, and handles idle, slideshow, settings, demo mode, localStorage caching, the message WebSocket, and the Home Assistant connector.
+tags: [svelte, state, polling, localstorage, idle, demo-mode, boot, websocket, home-assistant]
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
+    at: 2026-10-20T13:29:46.072Z
 sources:
   - id: openwiki-source-1749acaa35a5ed1522bc474a
     resource: repo://dashboard/index.html
@@ -15,11 +15,17 @@ sources:
     resource: repo://dashboard/src/components/Settings.svelte
   - id: openwiki-source-136e4998beec00d02c60296f
     resource: repo://dashboard/src/lib/api.js
+  - id: openwiki-source-81909880e1b8359442697bb1
+    resource: repo://dashboard/src/lib/ha.svelte.js
+  - id: openwiki-source-34e00111e7d20c4cdac2b34c
+    resource: repo://dashboard/src/lib/slides.js
   - id: openwiki-source-3a4039a222339b2ae26827c1
     resource: repo://dashboard/src/lib/state.svelte.js
   - id: openwiki-source-74255eeb4097b4c275c2f7c4
     resource: repo://dashboard/src/main.js
-generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
+  - id: openwiki-source-0709ad466b2ea97742fcdea4
+    resource: repo://dashboard/src/views/Ambient.svelte
+generated: { by: "openwiki/0.7.2", at: "2026-10-20T13:29:46.072Z" }
 ---
 
 # App shell, state and polling
@@ -87,7 +93,11 @@ Idle is driven by a `pointerdown` listener that calls `rearmIdle()`. If `idleMin
 
 The clock screen is rendered by `Ambient.svelte` while `ui.idle` is true. It shows the time in the chosen `clockColor`, date, weather, the next upcoming event, and any currently playing music. The family photo slideshow runs behind the clock when photos are available and `photosVisible()` is true. At night (`ui.theme === 'dark'`) the text is dimmed and the photos are dimmed even further; if Settings → Photos at night is off, `photosVisible()` returns false at night and the slideshow clears, leaving only the clock text on black.
 
-Photo preloading keeps the slideshow instant on slow Wi-Fi. `App.svelte` starts calling `prepare()` 15 s after boot whenever photos would be visible and the frame is not in demo mode. `Ambient.svelte` advances slides every 30 s via `takeSlide()`, which returns an already-downloaded slide and immediately starts preparing the next one. The preloader is paused when the dashboard is in use because `prepare()` is only triggered by the warm-up effect or the idle screen.
+### Photo preloading (`src/lib/slides.js`)
+
+Because the frame's Wi-Fi takes several seconds per photo, the next slide is always downloaded and decoded before it is shown. `App.svelte` starts calling `prepare()` 15 s after boot whenever photos would be visible and the frame is not in demo mode. `Ambient.svelte` advances slides every 30 s via `takeSlide()`, which returns an already-downloaded slide and immediately starts preparing the next one.
+
+`noteAlbum()` keeps a shuffled queue and, when new photos appear, pushes them to the front. `pick()` returns one landscape photo or two portraits side by side; if the queue is empty it reshuffles. A failed download is skipped automatically. The preloader is paused when the dashboard is in use because `prepare()` is only triggered by the warm-up effect or the idle screen.
 
 Tapping the clock screen calls `exitIdle()`, which sets `ui.idle = false` and immediately reloads Tasks, since Home shows them.
 
@@ -101,6 +111,34 @@ Settings → Demo mode swaps in invented data from `src/lib/demo.js`: a realisti
 - never caches demo data as real feed state.
 
 When demo mode is toggled, `setSetting('demo', …)` clears the demo list caches, calls `forget()` for calendar, photos and both lists and their metadata, and reloads them. This forces real data to redraw even if it happens to match what demo mode had shown. Switching demo off therefore brings back the real calendar, lists and photos from the server; switching it on rebuilds fresh demo data relative to the current day.
+
+## Message WebSocket (`state.svelte.js`)
+
+Agent messages are pushed over a WebSocket (`/api/messages/live`) the moment they are posted or dismissed. A ping every 30 s keeps the connection alive; the server answers `pong` without waking the worker. While the socket is down the frame reconnects with exponential backoff and polls once a minute via `loadMessages()` so nothing is missed.
+
+Messages shown on the frame are filtered against a local `dismissed` set, so tapping the X hides a message even if the server copy is a moment behind. New messages can be read aloud through Home Assistant: not in demo mode, not during quiet hours (10 PM–7 AM), not when `speak: false`, and only while the message is under 10 minutes old so a late reconnect does not read old news. The IDs of messages already announced are remembered in localStorage (last 100).
+
+## Home Assistant connector (`src/lib/ha.svelte.js`)
+
+The Music tab and the Home now-playing card talk directly to Home Assistant from the frame. The URL and long-lived token live in `localStorage` (`frame-ha-url`, `frame-ha-token`), usually pushed over ADB during setup, and are never in the deployed site or Cloudflare. HA's REST API blocks cross-origin calls, so everything goes through its WebSocket API.
+
+The module maintains:
+
+- `ha.status`: `off` | `connecting` | `connected` | `error`
+- `ha.players`: media players, with Music Assistant speakers listed first and de-duplicated by room when friendly names collide
+- `ha.tts`: available `tts.*` entities
+
+`connectHA()` opens the WebSocket, authenticates, and calls `get_states` once to find media players and TTS engines, then `subscribe_entities` for live diffs. Diff updates are merged into a local `entities` map and published into `ha.players`. On `auth_invalid` the connector stops retrying; otherwise it reconnects with exponential backoff up to 30 s.
+
+Helpers used elsewhere:
+
+- `haConfigured()` — true when both URL and token are set; `App.svelte` uses this to show the Music tab.
+- `haUrl(path)` — turns a HA entity-picture path into an absolute URL.
+- `callService(domain, service, data, target)` — sends a `call_service` message over the socket.
+- `nowPlaying({ hold })` — returns the currently playing player, or the last recently-played one for the Home card's hold behavior (kept up to 30 minutes, persisted across reloads).
+- `announce(text, entity_id)` — speaks text through the preferred Piper TTS engine if available, falling back to the first TTS engine.
+
+The Music view uses these helpers for play/pause, previous/next, volume, speaker selection, and queue transfer between Music Assistant players. Details are on [Home Assistant music and speech](../integrations/home-assistant-music-and-speech.md).
 
 ## Settings persistence and theme
 

@@ -1,11 +1,11 @@
 ---
 type: data-pipeline
 title: Weather and day/night theme
-description: The Open-Meteo weather proxy and its compact response, and how the frame uses sunrise and sunset (or a pinned preference) to switch between the light and dark palettes and dim the clock screen at night.
+description: The Open-Meteo weather proxy and its compact response, how the frame renders current conditions and forecasts, and how sunrise/sunset (or a pinned appearance preference) drives the light/dark palette and the Ambient clock screen at night.
 tags: [weather, open-meteo, theme, dark-mode, sunrise, sunset]
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
+    at: 2026-10-20T13:29:46.072Z
 sources:
   - id: openwiki-source-136e4998beec00d02c60296f
     resource: repo://dashboard/src/lib/api.js
@@ -21,12 +21,12 @@ sources:
     resource: repo://dashboard/worker/api.test.js
   - id: openwiki-source-cb5a2109e8a56015671f5cae
     resource: repo://dashboard/worker/weather.js
-generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
+generated: { by: "openwiki/0.7.2", at: "2026-10-20T13:29:46.072Z" }
 ---
 
 # Weather and day/night theme
 
-Weather appears in the top bar, on Home and on the idle clock screen. Its sunrise and sunset times also drive the dashboard's light/dark theme.
+Weather appears in the top bar, on Home, and on the idle clock screen. Its sunrise and sunset times also drive the dashboard's light/dark theme.
 
 ## Worker (`dashboard/worker/weather.js`)
 
@@ -38,7 +38,7 @@ The upstream request asks for:
 - daily: `temperature_2m_max`, `temperature_2m_min`, `precipitation_probability_max`, `weather_code`, `sunrise`, `sunset`;
 - five forecast days with `timezone: auto` and the chosen temperature unit.
 
-It is edge-cached for 10 minutes (`cf: { cacheTtl: 600, cacheEverything: true }`) so every frame poll does not hit Open-Meteo.
+It is edge-cached for 10 minutes (`cf: { cacheTtl: 600, cacheEverything: true }`) so every frame poll does not hit Open-Meteo directly.
 
 `shape()` reduces the response to what the screen shows:
 
@@ -55,11 +55,11 @@ Dates and sunrise/sunset are local wall-clock strings (`YYYY-MM-DDTHH:MM`). The 
 
 `weatherInfo(code, day)` in `src/lib/format.js` maps WMO weather codes to a label, a Lucide icon name and a tint (`sun` yellow or `rain` blue), with night variants for clear and partly cloudy. The top bar (`App.svelte`), Home and the Ambient clock screen all call it with the current `day` flag from `weather.data`; the four-day forecast strip on Home omits the `day` argument and therefore defaults to daytime icons.
 
-Home shows the current temperature and condition, today's high/low, and the next four days with rain probability and highs/lows. Ambient and the top bar show only the current temperature and icon.
+Home shows the current temperature and condition, today's high/low, and the next four days with rain probability and highs/lows. The top bar and Ambient show only the current temperature and icon. On Home a rain probability is shown only when it is 30 % or higher.
 
 ## Polling and caching (`src/lib/state.svelte.js`)
 
-`loadWeather()` runs every 15 minutes, deduplicates concurrent requests through `single('weather', …)`, and only updates `weather.data` (and re-applies the theme) when `changed('weather', w)` reports a difference. `changed()` also writes the last good response to localStorage as `frame-weather`, so the frame boots with data even when offline. See [app shell](../frontend/app-shell-state-and-polling.md).
+`loadWeather()` runs every 15 minutes, deduplicates concurrent requests through `single('weather', …)`, and only updates `weather.data` (and re-applies the theme) when `changed('weather', w)` reports a difference. `changed()` also writes the last good response to localStorage as `frame-weather`, so the frame boots with data even when offline. See [app shell, state and polling](../frontend/app-shell-state-and-polling.md).
 
 ## Theme switching
 
@@ -76,7 +76,7 @@ It writes `ui.theme` and sets the `data-theme` attribute on the root element. Th
 
 ## Night on the clock screen
 
-`Ambient.svelte` treats `ui.theme === 'dark'` as night: the clock text drops to 70% opacity and the photo slideshow to 45%, so the kitchen is not lit up after sunset. Photos are only shown at night when Settings → Photos at night is set to Dimmed (`ui.nightPhotos`), as decided by `photosVisible()`. See [photos and slideshow](./photos-and-slideshow.md).
+`Ambient.svelte` treats `ui.theme === 'dark'` as night: the clock text drops to 70 % opacity and the photo slideshow to 45 %, so the kitchen is not lit up after sunset. Photos are only shown at night when Settings → Photos at night is set to Dimmed (`ui.nightPhotos`), as decided by `photosVisible()`. See [photos and slideshow](./photos-and-slideshow.md).
 
 ## Tests
 

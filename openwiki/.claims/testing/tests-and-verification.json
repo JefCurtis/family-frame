@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:19ba79413354fb3baa37db76e33162f20fdd3ac280b072574724e7168304ed7c",
+  "pageVersion": "sha256:c11518f187a7a74277fac3955b92d8f665c217080c04d597d072d0bb13aaea43",
   "claims": [
     {
       "id": "claim_9237ad72c67041e19ae8e5f2015124c6",
@@ -17,56 +17,12 @@
       ]
     },
     {
-      "id": "claim_eebe9c437663435ba809576836507c59",
-      "statement": "Calendar parser tests use Google and iCloud fixture feeds at a fixed date and cover EXDATE and moved/cancelled instances, long-running daily events, all-day ranges, prefiltering, iCloud time zone quirks, merge de-duplication, DST, and fast-forward equivalence.",
-      "evidence": [
-        {
-          "resource": "repo://dashboard/worker/calendar.test.js#L1-L87",
-          "version": "repo-lines-v1:sha256:565d6b75a86e8bec6d56ae9579708ea8afd3cdbfe0879167b8ca8b010191e79d:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhOTY1Yjc3NjU2ZjVmMmRlZDc4NTAwNzEyOGU4NWZkM2E0ODlkNTE3NDFiMmIyN2ZjOTczOTFjOTJhMjhkNjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_ef662bc2e1fa48aeba8d1823698ecb8e",
-      "statement": "API tests call the Worker's fetch handler directly with a fake Todoist API installed on globalThis.fetch before each test and fake bindings for KV and assets.",
-      "evidence": [
-        {
-          "resource": "repo://dashboard/worker/api.test.js#L20-L61",
-          "version": "repo-lines-v1:sha256:3b0c7c0632b545a8b0b0b89922fdf11c33d754f278ef3ace0bc47ab973fef021:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyNjk0ZTBiZTg3YzdmYTk0M2U0YjM3MThmOWMwNDY0ODYxMmU4NjU2MmY0NjI3MjQxNTI2MzM0YTI5NjNkMGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0OTkyMGRlODVmZDQ1MjljOWQ0YWRmNTUwMmMzMWIxOWY1NzljNTFhMzc4NDRhOTA4MGU0ZjIyOGIxMDE0NGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxMjYzOGMzZWIyMzY1NmQxN2RmZjQ4OGJlY2RjMzFhNTM0NWUxNjM2YmNmZjQ5NTY2MWI5ZmIzODM4OWFmMDEifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_7398e548761a4d9bb3a10733ccbbe322",
-      "statement": "Message tests construct the real MessageRoom with a stand-in Durable Object context (storage, alarms, sockets) behind a fake namespace.",
-      "evidence": [
-        {
-          "resource": "repo://dashboard/worker/api.test.js#L7-L18",
-          "version": "repo-lines-v1:sha256:ad9f4b41287d0da9f8455e85761b46b9bc1249c7dcfcc915aa14e197532a733e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyODNmYWQyNDM5ZGM5YTU4NWI5ZDBhMWFkMDUxNjViN2Y0YmMwNmE4NmUxZWM1MTU2ZDI0MWQ3MTc2ZGI2NDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmY2EzZmNmZGZhODBhZWJmMWFlNTMyM2I2YzgzOTgyOWNmZmM2YmRiMzE4OWJmZTBjZjE5MWIzN2RlNjZjZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyZDM3YzQ1ODA5MzAzZThiMGI5M2YzNzM2ZDUzYWY1MjQzZjFiNjZiMTgzZWEzZTI1ZjY4YTdhMWRiYWEzYmEifQ"
-        }
-      ]
-    },
-    {
       "id": "claim_459c728cdb6e46d888a20e8a9637e30d",
       "statement": "API calls without the dashboard key are rejected with 401 while static assets are served without it.",
       "evidence": [
         {
           "resource": "repo://dashboard/worker/api.test.js#L62-L66",
           "version": "repo-lines-v1:sha256:d2b876bdcc1f2a86edb32aff6d52bc0f0a45ec85c2fbf77fe22ef33bed8b7ea1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmE2YTAwZTBhMTAzZmJlZGUxYWZmZWNjNTdhNmI1Y2FhZDAzNTRhZmQyNDIwNDZmNzBkNDUwMzRlNDMxNmMyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODliOTk3MmJhNDQ4MDAyMDA0MTY3NTM1YmY2OTQxYzUzZmJmZDgxMTYzODFkNGFhMWMyMTBiMzRmMmQ4MjhmNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTExN2MzZDkwMWZjMmJkNDI4NWMwYTViODYwYzliMWQxYWFiYTIwODAzMGY5ZWUzYTJjZjhlZTEwYzhhMDg2MCJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_e4723b707c554d218164493a7fee4000",
-      "statement": "Tests run with node's built-in test runner over worker/*.test.js, without a Worker runtime or network.",
-      "evidence": [
-        {
-          "resource": "repo://dashboard/package.json#L6-L12",
-          "version": "repo-lines-v1:sha256:5ff6fe370df50458a20b42baebbe3aa62ad8341a3a5071adb84c0c93b3210ec6:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ4MzNkNTk0OWMwM2E0MGNhOTUyNDkxNjEwYTY2NTk2NDRiM2FhNDY2MzYyZjc5OTAyMGRiZjE5ODE1NDdkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ1Y2QyZmI0ZjNkZjg4NDUxNTI1NWIzOTUyM2YyZjhiNTQ3MmJlZWE5ZjU2NmZmY2EyMDRkYjgwMjU2MTA0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2E2M2JmMDk0ZjUzYTg5MTIzMjc5MjRlMjllMTE5MzIzYjJjOTU5YWNjMDEzMmZhZmEyNzE1MmI1YmQ5Zjg2NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2JiNDRlZWE0ZWNlYzU0YTRkODI2OTU2Y2U2NjdlMTNjNjIwY2Y1MjVjNWJkZTI1NDNlYzQ5YzgyZjMxOTdmMyJ9"
-        },
-        {
-          "resource": "repo://dashboard/worker/calendar.test.js#L1-L4",
-          "version": "repo-lines-v1:sha256:f57cfba1b4ad2be53509314fb672700dae7375795b408b13307d9bd6b0989400:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmE5NjViNzc2NTZmNWYyZGVkNzg1MDA3MTI4ZTg1ZmQzYTQ4OWQ1MTc0MWIyYjI3ZmM5NzM5MWM5MmEyOGQ2OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzkzMWEzYzJhNjAxM2Q1YmM3ZWUzMWM0MWY5Nzc1NTc2NzhhZTYwYzgyMmVhZjBlN2U1Y2VjYjI3MTFkMWY5MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2E5MzViMTgyYzJkNzVlMWY1ODgzMmQ1NGVhN2ZiMTZmYjcwM2I5Yjc2Mjc5MmZjMWQwYjlhMTVhMjg1ZDZkYiJ9"
         }
       ]
     },
@@ -151,10 +107,36 @@
           "version": "repo-lines-v1:sha256:47c1cedcd68cbfe33786f726d7e6ece812f5796d108c6c873757adb3a66c60c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmQ2OGViNGRkMGI4N2E3ZjQyMTg5YzJkM2FmZTA2ZTg4NDkwMGE5MDE4MWI2NTgzYTQ4ZDc4NGFmZmJjMjhjYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTI0YTAwYjYwZDc5ZjY0NmExOWM2YmY1MzE0N2VmNDE2YjkyODczMGJhMmFiMjQ2OWJhMmJlNTQ0ZTczZWJmNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGZjYTNmY2ZkZmE4MGFlYmYxYWU1MzIzYjZjODM5ODI5Y2ZmYzZiZGIzMTg5YmZlMGNmMTkxYjM3ZGU2NmNmOSJ9"
         }
       ]
+    },
+    {
+      "id": "claim_0205181820da4d48a010c983fa07feca",
+      "statement": "Demo mode (Settings → Demo mode) replaces live calendar, tasks and list metadata with invented data from src/lib/demo.js, suppresses agent messages, Todoist writes and family photos, so the frame can be verified or shown without touching real services.",
+      "evidence": [
+        {
+          "resource": "repo://dashboard/src/App.svelte#L73-L74",
+          "version": "repo-lines-v1:sha256:1a2ddfaa17f8f1eeae482d69c35a7abd4b79ad279b800290d2910f6c53d4ee98:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBjOWZlZDJkMjQwZDk3ZTAyZTQ2NDU5MzNhOTQ1NzY4NTkzMThiMGE3Njc4ODA2YjI0MjVlNWM1YmY1MzFlMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTdjNGU4Mzg5NzJlZDRlN2E0YTUwMzc3YTI5Mzc2N2Q4MTViYzBmMjMyN2I5MDZiNzc3MThiMzFmNTdlMmI2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTdlOTM2YWE5OTI2Y2FmYzExMmJlYzNjMjQ2Y2M2OTQyOWE5Njk3MDYwZDg4NzA5ODM3NWFiNzIzNjI1ODEyOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjkxYTZhZjNkZWNiNWU4Mjg4NmE0YjVjNzAyYzdkMjU3NjIwYzk3OTBmZWZmNWRmZTM4NTZhM2ZjMjRmN2ZmYyJ9"
+        },
+        {
+          "resource": "repo://dashboard/src/lib/demo.js#L1-L10",
+          "version": "repo-lines-v1:sha256:afb3517a0e2db41f074217bc0e3e80403770cf299ad0b15b9e651cfc60425501:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3ZTQ2ODkyMGIxMjk0MzcwMGU1OGQ2MzZhNTNmOWFhMmEyNzY3OTM3MmQwYTAzYTY5ODBhMDk0YWVkNzg3YmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwYjk3ZmQ1ZmRlZDMyMjFhYmVlNTllODdlMjdhMjg2ODZkNzcxZDU3ZjE1M2VkMDMxN2MzMjg2YzY3YzdlZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxMDQzZGIzZTU4YzUzNWVlZDM1OGYwMTU4ZGUyNWQxOWQ3NmNmNzYzYjA4NDllMTY4ZDQzMTY3MDFkNTA0YzAifQ"
+        },
+        {
+          "resource": "repo://dashboard/src/lib/state.svelte.js#L210-L245",
+          "version": "repo-lines-v1:sha256:cb07265f4e75141048bf48783d4adb42a7c3e3adaddcb924f2839e49dc851c3e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2N2I1ZDk5YzlhNDkzNGNiZTcyMzdiMDkwZDE4YjYyZDc2ZWNlNWViY2ZhNDc1M2VlOGJlN2I1Njk0NGRhMmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ODE0MzNjMjI1ZTY3ZTI0ZjQxMWM4YzMwNjE0YzJmMWU3OGFiYjUwZTA4OGRiNjY1ODk1ZjM3N2IyODE1NzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU4NGU2ZGMyZjJiYzNkMTk0ZTc1ZTUzODA2ZTJjZTAyOTliMTk1ZWQ4MWVlN2I5YzdhZGRhMGU0MWYwM2UyMTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwYWQ5YTc5M2QxMzE1NzVjY2RiMzg5MDQyMTBkMDE2OWZjOGZhOWU0NzI0NmFhMmQxNDNkZGEzNTU2OTAwNzgifQ"
+        },
+        {
+          "resource": "repo://dashboard/src/lib/state.svelte.js#L29-L52",
+          "version": "repo-lines-v1:sha256:d1a28e8f72e879cdee51fcae0d268a116c8d4c4235fc0646599288ccb05c74fd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwZjhiMzc5NGNhYTFlM2JjY2U5MjI2Yzg3N2M2MGM4ZTQ4ZmE4MDQ2ODA5MGU0MGVmM2NiY2NhYmVlNmEwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkZWU5ZjZhOTcxODE1MmM5ZTQzZThlYTdmNzNmZmNlNWY0ZTczZWJjN2E5ZGQyNjhjNGIyNDI2MDRlMDM0ZWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwNzcwM2NlNWVhOTZhZmYyZWFlNGFhM2MwMTU4N2IxODQ0ODBjOTAzZGQ4NmY0NDc0YmZlODYxMGJkZDA5ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMTU2Y2M0ZWUxNmM1ZjhkN2Q4ZDQyZmFhODRjMDQ4NGU3NGUwMWRiN2RjZjM2NDkwYmQxYjRiMThjNGE0MzUifQ"
+        },
+        {
+          "resource": "repo://dashboard/src/lib/state.svelte.js#L89-L120",
+          "version": "repo-lines-v1:sha256:3bf9509efa6e737160fd507774dfc65470e8fbd6879e2ab0d100aaa83c88b396:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmNWRhNjBhOGUwZGVlNWE5ZDIyOThkYWU0MWRhMjk5N2IwNDZhZDFlN2ViMmI1MmFmNWMzYzY2NTliMjAyNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1ZmI0YzM4OTlmZGZjNmY3MWIzMzg5YzdlMjQ1ZWM3ODNjMDczZWVhMDUzZTU3NDBiMmNiOWIzNmVhMzc1ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4NTM3NDJjMTk3MzhlMGRiMzA5MWVmZmI3YTRlZTQ2ZTNkNWZmYWQwNDAyNTJlOWI5Y2UyMzEzYjgwZTJmNGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlmMzU0ZWVkYWNmMWM0MDkxNTYzNjYxZGQ3NjgwOGQ5YzM3YzUxYTE1MmNlOTllNzQzM2M2N2E3N2U2ZTQ2MDEifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-13T17:09:19.129Z"
+    "at": "2026-10-20T13:29:46.072Z"
   }
 }

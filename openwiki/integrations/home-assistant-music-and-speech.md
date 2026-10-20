@@ -3,9 +3,6 @@ type: integration
 title: "Home Assistant: music and speech"
 description: How the photo frame connects directly to Home Assistant on the LAN over its WebSocket API to list Music Assistant speakers, show now playing, control music, and read agent messages aloud with text-to-speech.
 tags: [home-assistant, music-assistant, websocket, tts, music, lan]
-verified:
-  - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
 sources:
   - id: openwiki-source-81e5843e3f05d867bcedaa39
     resource: repo://dashboard/src/components/NowPlaying.svelte
@@ -15,7 +12,10 @@ sources:
     resource: repo://dashboard/src/views/Music.svelte
   - id: openwiki-source-28fc9369ef5fcb7aea5d2dcd
     resource: repo://docs/frame.md
-generated: { by: "openwiki/0.7.2", at: "2026-10-13T17:09:19.129Z" }
+generated: { by: "openwiki/0.7.2", at: "2026-10-20T13:29:46.072Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-20T13:29:46.072Z
 ---
 
 # Home Assistant: music and speech
@@ -24,19 +24,23 @@ The Music tab, the Home/Ambient now-playing indicator, and spoken agent messages
 
 ## Why direct, and where the credentials live
 
-Home Assistant's REST API rejects cross-origin requests from the dashboard's https origin, but its WebSocket API accepts them, so `dashboard/src/lib/ha.svelte.js` uses only the WebSocket. The https page reaching a plain `ws://` LAN address works because the kiosk allows mixed content (see [Frameo frame notes](../../docs/frame.md)).
+Home Assistant's REST API rejects cross-origin requests from the dashboard's https origin, but its WebSocket API accepts them, so `dashboard/src/lib/ha.svelte.js` uses only the WebSocket. The https page reaching a plain `ws://` LAN address works because the kiosk allows mixed content (see [Frameo frame notes](../../docs/frame.md) and [Kiosk app](../device/kiosk-app-and-frame.md)).
 
-The HA URL and long-lived token are stored only in the frame's browser localStorage as `frame-ha-url` and `frame-ha-token`. They are pushed onto the frame over ADB or Chrome remote debugging from `dashboard/.frame.vars`, which is gitignored; they never appear in the deployed site, the repository, or Cloudflare. `haConfigured()` is false if either value is missing; `App.svelte` then omits the Music tab and nothing else breaks.
+The HA URL and long-lived token are stored only in the frame's browser localStorage as `frame-ha-url` and `frame-ha-token`. They are pushed onto the frame over ADB or Chrome remote debugging from `dashboard/.frame.vars`, which is gitignored; they never appear in the deployed site, the repository, or Cloudflare.
+
+The integration is only visible when both values are present. `App.svelte` reads `haConfigured()` while building the tab list, so the Music tab is omitted entirely if HA is not set up, and it calls `connectHA()` once the app mounts.
 
 `docs/frame.md` notes that the current token belongs to an admin HA user and recommends replacing it with a non-admin "Kitchen Frame" user, because the rooted frame lets any app on it read localStorage.
 
 ## WebSocket connection (`ha.svelte.js`)
 
-`connectHA()` opens `<ha-url>/api/websocket`. On `auth_required` it sends the stored token; on `auth_ok` it resets the retry timer, clears errors, and calls `subscribe()`. If HA answers `auth_invalid`, `ha.status` becomes `error` with the message "Home Assistant rejected the frame’s token" and the socket is closed without reconnecting, so a bad token does not hammer HA. On any other close, `connectHA()` schedules an exponential backoff retry from 1 s up to 30 s and reconnects.
+`connectHA()` opens `<ha-url>/api/websocket`. On `auth_required` it sends the stored token; on `auth_ok` it resets the retry timer, clears errors, sets `ha.status` to `connected`, and calls `subscribe()`. If HA answers `auth_invalid`, `ha.status` becomes `error` with the message "Home Assistant rejected the frame’s token" and the socket is closed without reconnecting, so a bad token does not hammer HA. On any other close, `connectHA()` rejects every pending request, then schedules an exponential backoff retry from 1 s up to 30 s and reconnects.
 
 `send(msg)` assigns an incrementing id, stashes a pending promise, and writes the message to the open socket; when a matching `result` arrives the promise resolves or rejects. A disconnect rejects every pending request. `callService(domain, service, data, target)` is the single helper for HA actions.
 
 `subscribe()` does one `get_states` call, collects all `tts.*` entities into `ha.tts`, gathers the ids of every `media_player.*`, clears the local entity cache, and asks HA to `subscribe_entities` for only those media-player ids. From then on HA pushes compact diffs: `applyDiff()` treats `a` as added/full, `c` as changed (with `+` for new values and `-` listing removed attribute keys), and `r` as removed. Each update ends in `publish()`.
+
+## Speaker list (`publish()`)
 
 `publish()` builds `ha.players`: unavailable players are dropped; when at least one Music Assistant player exists, only MA speakers are kept so TVs and duplicate entities don't clutter the list. A Music Assistant player is detected by attributes starting with `mass_` or `app_id: music_assistant`. Duplicate `friendly_name` values get a room suffix derived from the entity id (`hunter_s_bedroom` → "Hunter's Bedroom"); the list is sorted so playing speakers come first, then alphabetically by label.
 
@@ -62,4 +66,8 @@ The clock/Ambient screen uses `nowPlaying()` without `hold`; its music line disa
 
 The read-aloud wiring is in `dashboard/src/lib/state.svelte.js`. `announceNew()` speaks each new agent message once, building the text "Message from <from>. <title>. <body>" and truncating to 400 characters. It is skipped in demo mode, when HA is not connected, during quiet hours (22:00–07:00 frame time), when the message has `speak: false`, or when the message is older than 10 minutes so a late reconnect does not read stale news. Each message id is marked announced before the call and released only if `announce()` fails; the last 100 announced ids are persisted in `frame-announced` so a message is never read twice.
 
-`announceTarget()` picks the speaker: if Settings → Read messages aloud is off, it returns null. Otherwise it returns the speaker chosen in Settings (default `media_player.kitchen_mini`) if HA still has it, or the first available Music Assistant speaker as a fallback. The rules that decide when a message is shown versus spoken are documented on [Agent messages](../features/agent-messages.md).
+`announceTarget()` picks the speaker: if Settings → Read messages aloud is off, it returns null. Otherwise it returns the speaker chosen in Settings (default `media_player.kitchen_mini`) if HA still has it, or the first available speaker as a fallback. The Settings panel only exposes the read-aloud toggle when HA is configured and a speaker is present. The rules that decide when a message is shown versus spoken are documented on [Agent messages](../features/agent-messages.md).
+
+## Tests
+
+The dashboard side of the Home Assistant integration is not covered by the repository's automated test suite. The existing `worker/api.test.js` and `worker/calendar.test.js` exercise the backend API and calendar feed, not the frame's HA WebSocket code.

@@ -1,11 +1,11 @@
 ---
 type: feature
 title: Agent messages (live push)
-description: How AI agents post full-screen messages to the frame and how they arrive in about 0.1 s through a hibernating Cloudflare Durable Object (MessageRoom) and a WebSocket, including dismissal, expiry, fallback polling and read-aloud through Home Assistant.
+description: How AI agents post full-screen messages to the kitchen frame, delivered in about 0.1 s via a hibernating Cloudflare MessageRoom Durable Object and WebSocket, with dismissal, TTL expiry, fallback polling and Home Assistant read-aloud.
 tags: [messages, durable-objects, websocket, hibernation, agents, tts]
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-13T17:09:19.129Z
+    at: 2026-10-20T13:29:46.072Z
 sources:
   - id: openwiki-source-262fee19998c22821ad4184a
     resource: repo://dashboard/src/App.svelte
@@ -25,14 +25,12 @@ sources:
     resource: repo://dashboard/worker/messages.js
   - id: openwiki-source-0d4db84e2b7fee7556be759e
     resource: repo://dashboard/wrangler.jsonc
-generated: { by: "claude-code", at: "2026-10-13T14:37:10.456Z" }
+generated: { by: "openwiki/0.7.2", at: "2026-10-20T13:29:46.072Z" }
 ---
 
 # Agent messages (live push)
 
-Any AI agent or script holding `AGENT_TOKEN` can put a message on the kitchen frame. It covers the
-whole screen (dashboard or slideshow) until someone taps its X, and is normally read aloud on the
-Kitchen Mini. Delivery is push-based: a message reaches the screen about 0.1 s after the POST.
+Any AI agent or script holding `AGENT_TOKEN` can put a full-screen message on the kitchen frame. It covers the whole screen (dashboard or slideshow) until someone taps its X, and is normally read aloud on the chosen speaker. Delivery is push-based: a message reaches the screen about 0.1 s after the POST.
 
 ```text
 agent ──POST /api/messages (AGENT_TOKEN)──► Worker ──► MessageRoom (Durable Object "frame")
@@ -44,12 +42,11 @@ frame ──POST /api/messages/:id/dismiss (frame key)──► Worker ──►
 ## Server: the MessageRoom Durable Object
 
 `dashboard/worker/messages.js` defines `MessageRoom`, bound as `MESSAGES` with a SQLite-backed
-migration in `wrangler.jsonc` (see [build and configuration](../operations/build-deploy-and-configuration.md)).
+migration in `dashboard/wrangler.jsonc` (see [Worker routing, auth and caching](../worker/routing-auth-and-caching.md)).
 There is exactly one instance, named `frame`, obtained through `room(env)`; because every request
-goes through that instance, the list is strongly consistent (KV, used before, cached reads for
-30–60 s, which made fast polling pointless).
+goes through that instance, the list is strongly consistent.
 
-The Worker (`worker/index.js`) only authenticates and forwards; the room speaks a tiny internal
+The Worker (`dashboard/worker/index.js`) only authenticates and forwards; the room speaks a tiny internal
 HTTP protocol:
 
 | Public route | Auth | Room path |
@@ -60,12 +57,12 @@ HTTP protocol:
 | `POST /api/messages/:id/dismiss` | frame key | `/dismiss/:id` |
 
 The agent token opens only the POST route (and recipe saving); it cannot read anything. See
-[routing and auth](../worker/routing-auth-and-caching.md).
+[Worker routing, auth and caching](../worker/routing-auth-and-caching.md).
 
 ### Posting and limits
 
 `post()` validates the JSON body: `title` ≤120 chars and/or `body` ≤2,000 (line breaks normalised
-and kept), optional `from` ≤60, `ttl_minutes` (capped at 7 days), and `speak: false` to stay
+to `\n` and kept), optional `from` ≤60, `ttl_minutes` (capped at 7 days), and `speak: false` to stay
 silent. At most 20 undismissed messages may wait (`429` beyond that). Responses: `201 {id}`,
 `400` for empty/invalid input, `401` for a wrong token.
 
@@ -82,8 +79,9 @@ expired messages on every read, so an expired message never shows even if an ala
 The room is designed to stay asleep:
 
 - Sockets are accepted with `ctx.acceptWebSocket(server)` (hibernatable), not `server.accept()`.
-- The constructor registers `setWebSocketAutoResponse('ping' → 'pong')`, so the frame's keep-alive
-  is answered by the runtime without waking the object or billing duration.
+- The constructor registers `setWebSocketAutoResponse('ping' → 'pong')` when `WebSocketRequestResponsePair`
+  is available, so the frame's keep-alive is answered by the runtime without waking the object
+  or billing duration.
 - There are no in-memory timers; time-based work uses storage alarms. `webSocketMessage`,
   `webSocketClose` and `webSocketError` are no-ops (the compatibility date auto-replies to close
   frames).
@@ -94,47 +92,50 @@ It wakes only to accept a connection, store a post or dismissal, or run an expir
 
 In `dashboard/src/lib/state.svelte.js`:
 
-- `connectMessages()` opens `wss://…/api/messages/live?key=…`. On open it resets the backoff and
-  sends `ping` every 30 s; if no frame (including `pong`) arrived since the last ping, it closes
-  the socket as dead. Any non-`pong` frame is a full list passed to `showMessages()`.
+- `connectMessages()` opens `wss://…/api/messages/live?key=…`. The frame key comes from
+  `localStorage` (`frame-key`), where `dashboard/src/lib/api.js` stored it from `?key=` on first
+  load. On open it resets the backoff and sends `ping` every 30 s; if nothing arrived since the
+  last ping, it closes the socket as dead.
 - On close it reconnects with exponential backoff (1 s doubling to 60 s) and, if the socket had
   been up, does one HTTP `loadMessages()` to catch anything sent while it was closing.
 - `start()` also schedules `loadMessages()` every minute, but only while the socket is down, so a
   connected frame makes no message requests at all (see the scheduler in
-  [app shell](../frontend/app-shell-state-and-polling.md)).
+  [App shell, state and polling](../frontend/app-shell-state-and-polling.md)).
 - `showMessages()` drops ids dismissed locally (so a message doesn't flash back if a list arrives
   just before the server processes the dismissal) and only replaces state when the list changed.
 
-`components/Message.svelte` renders the oldest message as a full-screen `alertdialog` with sender,
-time, "1 of N", title and body; its X calls `dismissMessage()`, which hides it locally at once and
-POSTs the dismissal (the room then pushes the shorter list to every screen). `App.svelte` holds
-messages back entirely in demo mode, and `Ambient.svelte` pauses the slideshow while a message
-covers it.
+`dashboard/src/components/Message.svelte` renders the oldest message as a full-screen `alertdialog`
+with sender, time, "1 of N", title and body; its X calls `dismissMessage()`, which hides it locally
+at once and POSTs the dismissal (the room then pushes the shorter list to every screen).
+`dashboard/src/App.svelte` holds messages back entirely in demo mode, and
+`dashboard/src/views/Ambient.svelte` pauses the slideshow while a message covers it.
 
 ## Read-aloud
 
 `announceNew()` speaks each new message once through Home Assistant (`announce()` →
-`tts.speak`, Piper preferred; see [Home Assistant](../integrations/home-assistant-music-and-speech.md)):
+`tts.speak`; see [Home Assistant: music and speech](../integrations/home-assistant-music-and-speech.md)):
 "Message from <from>. <title>. <body>", truncated to 400 characters. It is skipped in demo mode,
 when Settings → Read messages aloud is off, when Home Assistant isn't connected, during quiet
 hours (22:00–07:00 frame time), for `speak: false`, and for messages older than 10 minutes (so a
 reconnect doesn't read old news). Announced ids are claimed before speaking, released if the call
-fails, and persisted in localStorage (`frame-announced`, last 100). On the very first run, messages
+fails, and persisted in `localStorage` (`frame-announced`, last 100). On the very first run, messages
 already present are treated as announced.
 
 The speaker comes from `announceTarget()`: the one chosen in Settings (initially
-`media_player.kitchen_mini`, this household's speaker) if Home Assistant has it, otherwise the
-first Music Assistant speaker, so read-aloud works on any setup without configuration.
+`media_player.kitchen_mini`) if Home Assistant has it, otherwise the first available speaker,
+so read-aloud works on any setup without configuration. The Settings sheet shows the selected
+speaker, the fallback, or Off.
 
-## Agent skill
+## Agent posting contract
 
-`~/.agents/skills/kitchen-frame-message` (outside this repo) asks the user for title, message,
-sender, read-aloud and expiry, previews, then POSTs with `$KITCHEN_FRAME_URL` and
-`$KITCHEN_FRAME_TOKEN`. `docs/messages.md` is the in-repo contract for agents.
+`docs/messages.md` is the in-repo contract for agents. The out-of-repo skill
+`~/.agents/skills/kitchen-frame-message` asks the user for title, message, sender, read-aloud and
+expiry, previews, then POSTs with `$KITCHEN_FRAME_URL` and `$KITCHEN_FRAME_TOKEN`.
 
 ## Tests
 
-`worker/api.test.js` runs the real `MessageRoom` behind a fake namespace and state (`fakeRoom()`):
-token boundaries, validation and limits, dismissal, the 20-message cap, and a test that posting
-and dismissing push to a connected socket, that a ttl sets an alarm, and that `/live` rejects a
-wrong key (401) and non-upgrade requests (426). See [tests](../testing/tests-and-verification.md).
+`dashboard/worker/api.test.js` runs the real `MessageRoom` behind a fake namespace and state
+(`fakeRoom()`): token boundaries, validation and limits, dismissal, the 20-message cap, and a
+test that posting and dismissing push to a connected socket, that a TTL sets an alarm, and that
+`/live` rejects a wrong key (401) and non-upgrade requests (426). See
+[Tests and verification](../testing/tests-and-verification.md).
