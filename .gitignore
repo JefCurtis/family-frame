@@ -2,6 +2,8 @@ node_modules/
 dist/
 .DS_Store
 .wrangler/
+# Per-deployment Cloudflare resource IDs and household configuration.
+dashboard/wrangler.jsonc
 # Upstream repo, cloned for reference: git clone https://github.com/wesbos/photo-frame-dashboard reference/photo-frame-dashboard
 reference/
 # Device dumps and identifiers. Never commit.

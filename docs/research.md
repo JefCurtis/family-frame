@@ -60,8 +60,7 @@ The same Amazon listing can ship different boards. Check Settings → About firs
   new pages.
 - A reload watchdog in `index.html` reloads the page if the bundle hasn't started within 10 s.
 
-## Open questions for when the frame arrives
+## Tested target
 
-- Which board (RK3126 BIUFRAME, A33 PF1007L, or something else)?
-- The real viewport and DPR, measured with `?diag`.
-- Baseline fps and heap for the starter page, then for each feature as it lands.
+The deployed frame uses the Allwinner A33 PF1007L variant with a 1280×800 viewport at DPR 1.
+Continue measuring frame rate, jank and heap with `?diag` when a feature changes rendering cost.

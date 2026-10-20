@@ -5,10 +5,9 @@ A dashboard web app for a rooted Android photo frame. Read `docs/research.md` be
 
 ## Target device
 
-- Our frame: Pastigio FRAME156, Android 8.1, WebView 106, Rockchip RK3326, ~1 GB RAM, Mali GPU,
-  1920×1080 shown as 1280×720 CSS px at DPR 1.5, Wi-Fi around 1 Mbit/s (details in `docs/frame.md`).
-- Design for the upstream floor too: Android 6, WebView 106 at best, quad-core Cortex-A7,
-  Mali-400, 1280×800 at DPR 1.
+- Tested frame: Anna Bella PF1007L, Android 6.0.1, WebView 106, Allwinner A33, about 1 GB RAM,
+  Mali-400 GPU and a 1280×800 landscape viewport at DPR 1 (details in `docs/frame.md`).
+- Treat that device as the performance floor: quad-core Cortex-A7, weak GPU and slow storage.
 - Don't use `oklch()`, `color-mix()`, CSS nesting, `:has()`, or 4/8-digit hex colours.
 - Keep `build.target: 'chrome106'` and `cssTarget: 'chrome61'` in `dashboard/vite.config.js`.
 - UI is Svelte 5 (no SvelteKit). Add a dependency only when it clearly earns its weight on this CPU.

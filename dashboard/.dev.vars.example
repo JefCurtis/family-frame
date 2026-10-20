@@ -8,7 +8,10 @@ DASHBOARD_KEY=""
 # DISPLAY_TZ="America/Chicago"
 # Todoist → Settings → Integrations → Developer → API token.
 TODOIST_TOKEN=""
-# Optional: weather location (rounded is fine) and unit.
+# Optional project names. Defaults are "Groceries" and "To-do".
+# TODOIST_GROCERY_PROJECT="Groceries"
+# TODOIST_TODO_PROJECT="To-do"
+# Optional: weather location and unit. Treat precise coordinates as private.
 # WEATHER_LAT="40.71"
 # WEATHER_LON="-74.01"
 # WEATHER_UNIT="celsius"

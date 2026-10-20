@@ -27,6 +27,7 @@ jobs:
           cache: npm
           cache-dependency-path: dashboard/package-lock.json
       - run: npm ci
+      - run: cp wrangler.example.jsonc wrangler.jsonc
       - run: npm test
       - run: npm run build
 

@@ -1,66 +1,95 @@
-# Our frame: Pastigio FRAME156 (15.6", Frameo)
+# Tested frame: Anna Bella PF1007L
 
-Same model and firmware as Wes's unit, so
-`reference/photo-frame-dashboard/docs/pastigio-frame156.md` applies directly. Serial number, MAC
-and IP address are deliberately not recorded here.
+The current deployment runs on an Anna Bella PF1007L. Serial numbers, MAC addresses, IP addresses,
+credentials and dashboard URLs are deliberately excluded from this repository.
 
-## Identity (read over ADB, 2026-10-12)
+## Hardware and software
 
 | | |
 | --- | --- |
-| Model / firmware | Pastigio `FRAME156` · `FrameO.DP105F.v2026010414` |
-| Android | 8.1.0 (API 27), security patch 2020-11-05, SELinux permissive |
-| SoC / RAM | Rockchip RK3326, 32-bit userspace (`armeabi-v7a`) · 951 MB |
-| Screen | 1920×1080 at 170 dpi (the dashboard was designed for 1280×800 and must be adapted) |
-| WebView | 106.0.5249.126, already current, no swap needed |
-| Root | `su -c id` returns uid 0 with no prompt. Any app on the frame can get root: install nothing untrusted |
-| Home app | `net.frameo.frame` (Frameo) |
-| Network ADB | off (nothing listening on 5555) |
-| Clock | **No battery-backed clock** (`/dev/rtc0` missing). Every power-up starts at 2008-12-31 until Wi-Fi time sync, so the first HTTPS load fails with a certificate-date error. The kiosk retries until it loads (verified 2026-10-12 by setting the clock back). |
+| Model | Anna Bella `PF1007L` |
+| SoC | Allwinner A33 (`sun8i`) |
+| Android | 6.0.1, API 23 |
+| Stock build | `astar_m86_8723cs-eng`, test keys |
+| Display target | 1280×800 CSS pixels |
+| WebView | LineageOS WebView 106.0.5249.126 |
+| Storage | 16 GB eMMC |
+| USB | Stock `1f3a:1000`; persistent ADB `1f3a:1002` |
 
-## Getting ADB working (what actually worked)
+This firmware does not expose ADB over stock USB. Temporary root Wi-Fi ADB was used to enable the
+persistent `mass_storage,adb` USB mode. The exact root path depends on the firmware and is outside
+this repository.
 
-1. Frameo setting **Transfer from computer: off**. With it on, the frame shows up on USB for a moment,
-   then Frameo takes the USB connection and ADB disappears before the approval prompt can appear.
-2. Plug in by USB (it worked through an Apple USB-C Digital AV Multiport Adapter).
-3. Open Frameo's Settings screen so the slideshow isn't in front, then re-request authorization
-   from the Mac (`adb reconnect`) until "Allow USB debugging?" appears; tap Allow.
-4. The USB link still drops for a few seconds now and then; retry commands rather than assuming failure.
+## Safety first
 
-## Changes made
+Make and verify a complete eMMC backup before writing to `/system`, changing boot files or flashing
+anything. Keep backups and device identifiers outside Git. The tested frame has a verified full
+backup, but that image is private and cannot restore another unit safely.
 
-| Date | Change | Command | Undo |
-| --- | --- | --- | --- |
-| 2026-10-12 | Vendor OTA updater off | `pm disable-user --user 0 com.muxintu.app.mxota` | `pm enable com.muxintu.app.mxota` |
-| 2026-10-12 | Rockchip updater off | `pm disable-user --user 0 android.rockchip.update.service` | `pm enable android.rockchip.update.service` |
-| 2026-10-12 | Kiosk installed (`com.huntsyea.frame`, now 1.3, built from `kiosk/`; 1.2 adds the brightness bridge `window.FrameKiosk`, 1.3 allows the https page to reach Home Assistant over plain http on the LAN) | `adb install -r kiosk/build/frame.apk`, URL set once with `am start … -d <dashboard url with ?key=>` | `adb uninstall com.huntsyea.frame` |
-| 2026-10-12 | Frameo off | `pm disable-user --user 0 net.frameo.frame` | `pm enable net.frameo.frame` (photos and settings untouched) |
-| 2026-10-12 | Kiosk made the Home app | `cmd package set-home-activity com.huntsyea.frame/.MainActivity` | `cmd package set-home-activity net.frameo.frame/.ui.activities.AWaitForDeferredInitCompleted` after re-enabling Frameo |
+The stock WebView was too old for the dashboard. It was replaced with WebView 106 and its required
+ARM libraries only after the backup was verified. The original `/system/app/webview` tree remains on
+the device for rollback.
 
-Nothing under `/system` or any flash partition has been written. No backup taken (owner's choice).
+## Installed components
 
-## Day-to-day
+- The kiosk APK from `kiosk/` is the default Home application.
+- Rootless Launcher provides a conventional Android launcher when leaving the kiosk.
+- A two-finger hold opens dashboard reload and Android settings controls.
+- An accessibility service provides movable **Back** and **Dashboard** buttons outside the kiosk.
+- The service has `WRITE_SECURE_SETTINGS` only so the kiosk can restore that navigation service.
+- The vendor remote-control application, updater and factory test application are disabled for the
+  primary user. They are not deleted.
 
-- Dashboard: `https://photo-frame-dashboard.<your-subdomain>.workers.dev/?key=<DASHBOARD_KEY>` (key in `dashboard/.prod.vars`, gitignored).
-- Change the URL: `adb shell am start -n com.huntsyea.frame/.MainActivity -d '<url>'` (remembered across reboots).
-- Escape hatch on the frame: hold two fingers still for 2 s → Reload dashboard / Android settings.
-- Logs: `adb logcat -s FrameKiosk` shows loads, retries and SSL/network errors.
-- Remote debugging (chrome://inspect) only while launched with `--ez debug true`; any normal launch turns it off.
-- Brightness: Settings → Brightness calls `window.FrameKiosk.setBrightness(0.05–1)`; the kiosk saves it and applies it at start. `setBrightness(-1)` hands control back to Android's own setting.
-- Demo mode (Settings): sample calendar and lists, no photos; ticks and additions stay on the frame and never reach Todoist.
-- After a deploy, Cloudflare can take ~30 s to serve the new version everywhere; a frame that reloads sooner gets the old one until its next reload.
+These changes are specific to the tested frame. Package names and recovery commands can differ on
+other firmware builds.
 
-## Music (Home Assistant + Music Assistant)
+## Build and install the kiosk
 
-- The Music tab talks to Home Assistant directly on the LAN (`http://<home-assistant-ip>`, HA 2026.9.4) over its
-  WebSocket API; HA's REST API rejects cross-origin calls, the WebSocket API doesn't. Music Assistant
-  2.10.5 runs as an HA add-on; only its speakers are shown (Echo Spot ×2, Kitchen Mini, VANKYO).
-- The HA URL and long-lived token are stored only in the frame's localStorage (`frame-ha-url`,
-  `frame-ha-token`), pushed over ADB/DevTools from `dashboard/.frame.vars` (gitignored). They are not in
-  the deployed site or Cloudflare.
-- **The current token belongs to an admin HA account (owner's choice, 2026-10-12).** Any app on this
-  frame can get root, so anything that compromised the frame would have full control of Home Assistant.
-  Recommended: create a non-admin "Kitchen Frame" user, put its token in `.frame.vars`, push it to the
-  frame the same way, then delete the admin token in HA (Profile → Security).
-- The Music tab only appears when a token is present. Removing `frame-ha-token` hides it again.
+The build requires JDK 17, Android platform 34 and build tools 34.0.0:
 
+```sh
+./kiosk/build.sh
+adb install -r kiosk/build/frame.apk
+```
+
+Set or change the dashboard URL:
+
+```sh
+adb shell am start -n com.huntsyea.frame/.MainActivity \
+  -d 'https://your-worker.workers.dev/?key=<DASHBOARD_KEY>'
+```
+
+The URL is stored in the kiosk application preferences. It is not compiled into the APK or stored in
+this repository.
+
+Grant the narrow permission needed to restore the navigation service:
+
+```sh
+adb shell pm grant com.huntsyea.frame android.permission.WRITE_SECURE_SETTINGS
+```
+
+To remove the kiosk:
+
+```sh
+adb uninstall com.huntsyea.frame
+```
+
+Restore another Home application before removal if the kiosk is currently the default Home app.
+
+## Day-to-day controls
+
+- Hold two fingers still for two seconds to reload the dashboard or open Android settings.
+- Use the floating **Back** and **Dashboard** buttons while another application is open.
+- Launch with `--ez debug true` to enable remote WebView debugging temporarily.
+- Run `adb logcat -s FrameKiosk` to inspect startup, network and certificate errors.
+- Send a normal launch intent to disable remote debugging again.
+
+The frame can start before Wi-Fi and network time are ready. The kiosk never bypasses certificate
+checks. It retries the HTTPS dashboard until the clock and connection recover.
+
+## Home Assistant
+
+Home Assistant is optional. Its URL and long-lived token live only in the frame's local storage and
+are loaded from an ignored `.frame.vars` file. They are never bundled into the dashboard or kiosk.
+Use a dedicated non-admin Home Assistant user because applications on a rooted frame can read local
+storage.

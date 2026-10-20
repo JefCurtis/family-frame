@@ -6,7 +6,7 @@
 
 - [ ] `npm test` passes (in `dashboard/`)
 - [ ] `npm run build` passes with no new warnings
-- [ ] UI changes checked at 1280×720, light and dark (screenshots below)
+- [ ] UI changes checked at 1280×800, light and dark (screenshots below)
 
 ## Checklist
 
