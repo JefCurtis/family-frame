@@ -93,7 +93,7 @@
     {/if}
 
     <div class="row">
-      <span>Demo mode<small>Sample calendar, lists and no photos, for showing people</small></span>
+      <span>Demo mode<small>Sample calendar, lists, weather and photos</small></span>
       <div class="seg">
         <button class:on={ui.demo} onclick={() => setSetting('demo', true)}>On</button>
         <button class:on={!ui.demo} onclick={() => setSetting('demo', false)}>Off</button>

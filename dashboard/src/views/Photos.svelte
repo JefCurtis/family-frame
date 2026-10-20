@@ -6,7 +6,7 @@
   let selected = $state(null);
   let items = $derived(photos.items);
   let index = $derived(selected ? items.findIndex((item) => item.id === selected.id) : -1);
-  const src = (item, thumb = false) => withKey('/api/photos/' + item.id + (thumb ? '?thumb=1' : ''));
+  const src = (item, thumb = false) => item.src || withKey('/api/photos/' + item.id + (thumb ? '?thumb=1' : ''));
 
   function move(by) {
     if (!items.length || index < 0) return;

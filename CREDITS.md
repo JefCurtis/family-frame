@@ -16,6 +16,7 @@ is copied from his repository, which has no license. Go watch the video and star
 ## Data and services
 
 - Weather data by [Open-Meteo](https://open-meteo.com) (CC BY 4.0).
+- Bundled Demo mode photography from [Unsplash](https://unsplash.com).
 - Recipes from [TheMealDB](https://www.themealdb.com) (free API key for personal use).
 - Calendars, Todoist, iCloud Shared Albums and Home Assistant / Music Assistant are each the
   household's own accounts, accessed through their APIs.

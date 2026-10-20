@@ -13,8 +13,8 @@ cp wrangler.example.jsonc wrangler.jsonc     # local deployment configuration
 npm run dev                                 # open http://localhost:5173/?key=<DASHBOARD_KEY>
 ```
 
-No accounts? Turn on **Settings → Demo mode**: invented calendar, tasks and groceries, nothing
-reaches Todoist. The developer wiki starts at [openwiki/quickstart.md](openwiki/quickstart.md).
+No accounts? Turn on **Settings → Demo mode** for a complete invented calendar, tasks, groceries,
+weather and photo album. Nothing reaches Todoist. The developer wiki starts at [openwiki/quickstart.md](openwiki/quickstart.md).
 
 ## Before you open a pull request
 

@@ -20,8 +20,25 @@ roughly 1 GB of memory.
 - Optional Home Assistant music controls and agent messages
 - Android kiosk with startup recovery, two-finger controls and floating navigation buttons
 
-Screenshots and demo mode use synthetic data. Personal events, tasks and photos stay outside the
+Screenshots and Demo mode use synthetic data. Personal events, tasks and photos stay outside the
 repository.
+
+## Screenshots
+
+| Week | Month |
+| --- | --- |
+| ![Weekly family calendar](docs/images/calendar-week-light.jpg) | ![Monthly family calendar](docs/images/calendar-month-light.jpg) |
+
+| Groceries | Tasks |
+| --- | --- |
+| ![Demo grocery list](docs/images/groceries-light.jpg) | ![Demo household tasks](docs/images/tasks-light.jpg) |
+
+| Weather | Photos |
+| --- | --- |
+| ![Demo weather forecast](docs/images/weather-light.jpg) | ![Demo family photo gallery](docs/images/photos-light.jpg) |
+
+Demo mode supplies a complete sample calendar, groceries, tasks, weather and bundled generic photos.
+It never shows household data or writes to Todoist.
 
 ## How it works
 

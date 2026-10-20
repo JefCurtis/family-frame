@@ -813,14 +813,14 @@
       "Do keep the fixed 1280×800 layout and scroll busy content inside its allocated sheet or day column.",
       "Do retain inset separators, calendar source colours, and completion rings where the built components use them.",
       "Do use inline SVG stroke icons and tabular figures.",
-      "Do preserve sunrise/sunset switching, the five-minute idle timeout, and tap-to-wake behavior."
+      "Do preserve sunrise/sunset switching, the five-minute idle timeout, tap-to-wake behavior, and the preloaded photo slideshow."
     ],
     "donts": [
       "Don't add shadows, blur, filters, or continuous animation on the Mali-400 GPU.",
       "Don't use oklch(), color-mix(), :has(), CSS nesting, or 4- or 8-digit hex colours in WebView 106.",
       "Don't turn every row into a bordered card or add decorative pills and kickers.",
       "Don't treat preview tonal ramps as production tokens or introduce hover effects that the app does not implement.",
-      "Don't document a photo slideshow, mobile layout, or responsive breakpoint as shipped behavior."
+      "Don't document a mobile layout or responsive breakpoint as shipped behavior."
     ]
   }
 }

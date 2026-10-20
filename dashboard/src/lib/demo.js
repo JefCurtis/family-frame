@@ -1,5 +1,5 @@
-// Sample data for Demo mode (Settings), so the frame can be shown to people without real
-// calendars, tasks or photos. Everything is invented and built relative to today.
+// Sample data for Demo mode (Settings), so the frame can be shown without real household data.
+// Everything is invented and built relative to today.
 import { addDays, dayKey } from './format.js';
 
 export function demoCalendar(now) {
@@ -54,4 +54,44 @@ export function demoMeta(name) {
     sections: [{ id: 'ds1', name: 'This week' }, { id: 'ds2', name: 'Around the house' }, { id: 'ds3', name: 'Errands' }],
     people: { p1: 'Alex Morgan', p2: 'Sam Rivera' },
   };
+}
+
+export function demoWeather(now) {
+  const temperatures = [16, 17, 18, 18, 17, 16, 15, 14, 14, 13, 13, 12];
+  const rain = [10, 10, 5, 5, 10, 20, 25, 30, 25, 20, 15, 10];
+  const codes = [2, 2, 1, 1, 2, 3, 3, 61, 61, 3, 2, 1];
+  const first = new Date(now);
+  first.setMinutes(0, 0, 0);
+  const hours = temperatures.map((temp, i) => ({
+    time: new Date(first.getTime() + i * 60 * 60 * 1000).toISOString(),
+    temp,
+    feels: temp - 1,
+    rain: rain[i],
+    wind: 10 + i,
+    code: codes[i],
+    day: true,
+  }));
+  const highs = [18, 17, 15, 14, 16, 18, 17];
+  const lows = [11, 10, 8, 7, 9, 10, 11];
+  const dailyCodes = [2, 3, 61, 80, 2, 0, 1];
+  const dailyRain = [10, 20, 70, 55, 15, 5, 10];
+  const at = (day, hour) => { const d = addDays(now, day); d.setHours(hour, 0, 0, 0); return d.toISOString(); };
+  const days = highs.map((hi, i) => ({
+    date: dayKey(addDays(now, i)),
+    hi,
+    lo: lows[i],
+    rain: dailyRain[i],
+    precip: dailyRain[i] ? Math.round(dailyRain[i] / 20 * 10) / 10 : 0,
+    wind: 14 + i * 2,
+    uv: Math.max(1, 4 - Math.floor(i / 2)),
+    code: dailyCodes[i],
+    sunrise: at(i, 7),
+    sunset: at(i, 18),
+  }));
+  return { temp: 16, feels: 15, humidity: 68, wind: 12, code: 2, day: true, hours, days, updated: now.toISOString(), demo: true };
+}
+
+export function demoPhotos() {
+  return ['lake-house', 'trail', 'beach', 'breakfast', 'forest', 'hills', 'mountain', 'leaves']
+    .map((name, i) => ({ id: 'demo-photo-' + i, w: 800, h: 600, src: '/demo-photos/' + name + '.jpg' }));
 }

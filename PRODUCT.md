@@ -34,7 +34,7 @@ family to move into a new app, and it runs on a $50 frame instead of a subscript
   Cortex-A7, Mali-400 GPU. No shadows, blurs, filters or continuous animation; no `oklch()`,
   `color-mix()`, CSS nesting, `:has()`, or 4/8-digit hex colours.
 - Stack: Svelte 5 + Vite, served with its API by one Cloudflare Worker.
-- Undecided: the photo source for the idle slideshow.
+- Photos come from an iCloud Shared Album; Demo mode uses bundled generic images.
 
 ## Brand Commitments
 - Look and feel: Apple-like, in the manner of iOS widgets. Calm, like a well-made object in the

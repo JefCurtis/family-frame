@@ -10,7 +10,7 @@ related_targets: ["dashboard/src/views/Home.svelte","dashboard/src/views/Week.sv
 Scope: the frame's whole app, `dashboard/src/` (App shell, Home, Calendar, Groceries, Tasks, Weather, Photos, idle). Mode: Operate.
 Audience and job: adults in the kitchen/hall glancing for what's next and checking off list items.
 Constraints: see PRODUCT.md (1280×800, WebView 106, Mali-400: flat fills only).
-Unresolved: idle photo source.
+Idle photos: an iCloud Shared Album in normal use and bundled generic images in Demo mode.
 
 ## Direction contract
 

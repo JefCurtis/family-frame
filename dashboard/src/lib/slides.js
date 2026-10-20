@@ -4,7 +4,7 @@
 import { photos } from './state.svelte.js';
 import { withKey } from './api.js';
 
-export const src = (p) => withKey('/api/photos/' + p.id);
+export const src = (p) => p.src || withKey('/api/photos/' + p.id);
 
 let queue = [];
 let known = null;

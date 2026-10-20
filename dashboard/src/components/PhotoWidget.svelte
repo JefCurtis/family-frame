@@ -6,11 +6,12 @@
 
   const CHANGE_MS = 30 * 60 * 1000;
   let photo = $state(null);
-  const src = (item) => withKey('/api/photos/' + item.id);
+  const src = (item) => item.src || withKey('/api/photos/' + item.id);
 
   function choosePhoto() {
     const items = photos.items;
     if (!items.length) return;
+    if (!photo && items[0]?.src) { photo = items[0]; return; }
     const choices = items.length > 1 && photo ? items.filter((item) => item.id !== photo.id) : items;
     photo = choices[Math.floor(Math.random() * choices.length)];
   }

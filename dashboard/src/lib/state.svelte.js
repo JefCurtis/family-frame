@@ -2,7 +2,7 @@
 // needs it (see start()), one request at a time, and unchanged results don't touch the screen.
 import { api, cached, remember, changed, forget, withKey } from './api.js';
 import { dayKey, recipeTitle } from './format.js';
-import { demoCalendar, demoList, demoMeta } from './demo.js';
+import { demoCalendar, demoList, demoMeta, demoPhotos, demoWeather } from './demo.js';
 import { ha, announce } from './ha.svelte.js';
 
 const MIN = 60 * 1000;
@@ -40,15 +40,15 @@ export function setSetting(key, value) {
     ui.demo = value;
     localStorage.setItem('frame-demo', value ? 'on' : 'off');
     lists.groceries.items = lists.todo.items = null; // demo lists are rebuilt fresh each time it's switched on
-    forget('calendar', 'photos', 'todo', 'groceries', 'todo-meta', 'groceries-meta'); // real data must redraw
-    loadCalendar(); loadList('todo'); loadList('groceries'); loadPhotos();
+    forget('calendar', 'weather', 'photos', 'todo', 'groceries', 'todo-meta', 'groceries-meta'); // real data must redraw
+    loadCalendar(); loadWeather(); loadList('todo'); loadList('groceries'); loadPhotos();
   }
 }
 export const clock = $state({ now: new Date() });
 // In demo mode nothing real is shown at boot, even briefly, and nothing demo is cached as real.
 export const calendar = $state({ data: ui.demo ? demoCalendar(new Date()) : cached('calendar'), offline: false });
-export const weather = $state({ data: cached('weather'), error: null });
-export const photos = $state({ items: ui.demo ? [] : cached('photos') || [] });
+export const weather = $state({ data: ui.demo ? demoWeather(new Date()) : cached('weather'), error: null });
+export const photos = $state({ items: ui.demo ? demoPhotos() : cached('photos') || [] });
 // Recipes saved by agents or from Explore (GET /api/recipes).
 export const recipes = $state({ saved: cached('recipes') || null, error: null });
 export function loadRecipes() {
@@ -104,6 +104,7 @@ export function loadCalendar() {
 }
 
 function loadWeather() {
+  if (ui.demo) { weather.data = demoWeather(new Date()); weather.error = null; applyTheme(); return Promise.resolve(); }
   return single('weather', async () => {
     try {
       const w = await api('/api/weather');
@@ -117,7 +118,7 @@ function loadWeather() {
 }
 
 export function loadPhotos() {
-  if (ui.demo) { photos.items = []; return Promise.resolve(); } // demo mode never shows family photos
+  if (ui.demo) { photos.items = demoPhotos(); return Promise.resolve(); }
   return single('photos', async () => {
     try {
       const items = (await api('/api/photos')).photos || [];

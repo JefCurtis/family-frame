@@ -300,7 +300,7 @@ Home rows pair a source dot with a wrapping title and supporting time/location t
 
 After five minutes without pointer activity, the app selects Home and places a full-stage button above it. The idle screen is always black. In light theme its clock and main content are white, with grey date and next-event time. In dark theme all foreground content uses `idle-night-red`.
 
-The idle layout has 72px horizontal padding and a 56px gap. Its clock uses `display-idle`. The side column has a 22px gap and 40px top padding; it shows the date, available weather, and the next future timed event today. It omits all-day events and tomorrow's events. Tap wakes to Home and reloads the lists. List polling pauses during idle; the clock continues at minute intervals. No photo slideshow is built, and no continuous motion is used.
+The idle layout has 72px horizontal padding and a 56px gap. Its clock uses `display-idle`. The side column has a 22px gap and 40px top padding; it shows the date, available weather, and the next future timed event today. It omits all-day events and tomorrow's events. Tap wakes to Home and reloads the lists. List polling pauses during idle; the clock continues at minute intervals. When photos exist, a preloaded slideshow changes every 30 seconds with a short crossfade. Photos dim after sunset or stay off when the setting disables them.
 
 ### Icons and preview scope
 
@@ -324,4 +324,4 @@ Icons are inline SVG strokes on a 24px viewBox, with a 2px stroke, rounded caps 
 - Don't treat preview tonal ramps as production tokens or introduce hover effects that the app does not implement.
 - Don't document a photo slideshow, mobile layout, or responsive breakpoint as shipped behavior.
 
-Not canonized or repaired: the input's missing visible focus treatment is not a recommended pattern. The built system-font display is recorded as evidence of the user-pinned Apple direction, not promoted as a general display-font rule; the documenter floor flags system display faces. No source changes were authorized. Photo sourcing remains unresolved. The supplied ship verdict is retained; this documentation pass does not claim to repeat the finish review.
+Not canonized or repaired: the input's missing visible focus treatment is not a recommended pattern. The built system-font display is recorded as evidence of the user-pinned Apple direction, not promoted as a general display-font rule; the documenter floor flags system display faces. The supplied ship verdict is retained; this documentation pass does not claim to repeat the finish review.
