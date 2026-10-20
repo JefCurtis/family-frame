@@ -7,7 +7,7 @@ credentials and dashboard URLs are deliberately excluded from this repository.
 
 | | |
 | --- | --- |
-| Model | Anna Bella `PF1007L` |
+| Model | [Anna Bella `PF1007L`](https://www.amazon.ca/dp/B0H4W1YPHH) |
 | SoC | Allwinner A33 (`sun8i`) |
 | Android | 6.0.1, API 23 |
 | Stock build | `astar_m86_8723cs-eng`, test keys |

@@ -5,8 +5,9 @@ family calendars, Todoist lists and an iCloud photo album in one touch-friendly 
 
 ![Home screen](docs/images/home-light.jpg)
 
-This fork runs on an Anna Bella PF1007L with Android 6.0.1 and WebView 106. The dashboard also
-supports similar rooted frames with a 1280×800 display and roughly 1 GB of memory.
+This fork runs on an [Anna Bella PF1007L](https://www.amazon.ca/dp/B0H4W1YPHH) with Android 6.0.1
+and WebView 106. The dashboard also supports similar rooted frames with a 1280×800 display and
+roughly 1 GB of memory.
 
 ## Features
 
