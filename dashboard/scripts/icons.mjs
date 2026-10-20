@@ -8,6 +8,7 @@ const ICONS = {
   bookmark: 'bookmark', shuffle: 'shuffle', trash: 'trash-2', clock: 'clock', users: 'users', utensils: 'utensils',
   sun: 'sun', moon: 'moon', cloud: 'cloud', cloudSun: 'cloud-sun',
   rain: 'cloud-rain', snow: 'cloud-snow', storm: 'cloud-lightning', fog: 'cloud-fog',
+  wind: 'wind', droplets: 'droplets', sunrise: 'sunrise', sunset: 'sunset', image: 'image',
 };
 const inner = (name) => readFileSync(new URL(`../node_modules/lucide-static/icons/${name}.svg`, import.meta.url), 'utf8')
   .replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replace(/\s*\n\s*/g, '').trim();

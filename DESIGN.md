@@ -250,9 +250,9 @@ The app is a fixed 1280×800 stage at DPR 1, with body overflow hidden. No respo
 
 The top bar has three columns (`1fr auto 1fr`), with 18px 28px 14px padding. Navigation stays centered, the temperature sits right, and a compact clock appears left outside Home. The content area flexes into the remaining height. Only the selected view mounts.
 
-All main views use 10px 28px 28px outer padding. Home has a 412px time/weather column and two equal remaining columns, separated by 20px. Weather sits at the foot of the first column. Calendar and To-do content scroll inside their sheets; footer actions remain visible. This is the built exception to the brief's shorthand of one sheet per tab.
+All main views use 10px 28px 28px outer padding. Home has a 412px time/weather column and two equal remaining columns, separated by 20px. Weather sits at the foot of the first column. Calendar and Tasks content scroll inside their sheets; footer actions remain visible. This is the built exception to the brief's shorthand of one sheet per tab.
 
-Calendar uses one sheet with seven equal day columns and 20px vertical padding. Each column has 10px horizontal padding and its own event scroll area. Groceries uses two equal item columns with a 40px gap; To-do uses one. List sheets use 26px 32px padding. The spacing tokens record observed recurring values, not a mandatory arithmetic scale.
+Calendar uses one sheet with seven equal day columns and 20px vertical padding. Each column has 10px horizontal padding and its own event scroll area. Groceries uses two equal item columns with a 40px gap; Tasks uses one. The Weather tab has a current-conditions sheet, a 12-hour strip, and seven equal daily forecast sheets. List sheets use 26px 32px padding. The spacing tokens record observed recurring values, not a mandatory arithmetic scale.
 
 ## Elevation & Depth
 
@@ -284,7 +284,7 @@ The New item field is transparent and borderless, 52px high, with 24px text and 
 
 ### Navigation
 
-The four text segments are Home, Calendar, Groceries, and To-do. The track has 3px padding. Each segment is at least 150px wide and 48px high, with 0 20px padding and 18px text. Selection changes the fill to `thumb` and weight from 500 to 600. Pressing an unselected segment reduces opacity to .5. There is no mobile variant or sliding animation.
+The six text segments are Home, Calendar, Groceries, Tasks, Weather, and Photos. The track has 3px padding. Each segment is at least 124px wide and 48px high, with 0 18px padding and 18px text. Selection changes the fill to `thumb` and weight from 500 to 600. Pressing an unselected segment reduces opacity to .5. There is no mobile variant or sliding animation.
 
 ### Task rows
 

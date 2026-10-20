@@ -73,12 +73,15 @@ export function toPhotos(records) {
       && (k !== 'resOriginal' || Math.max(f[k + 'Width'].value, f[k + 'Height'].value) <= 2560));
     if (!pick) continue; // videos, HEIC-only originals
     const [src, k] = pick;
+    const thumb = [[a, 'resJPEGThumb'], [m, 'resJPEGThumb']].find(([f, name]) =>
+      f[name + 'Res'] && /jpeg/.test(String(f[name + 'FileType'] && f[name + 'FileType'].value)));
     photos.push({
       id: asset.recordName.replace(/[^A-Za-z0-9-]/g, '') + '-' + String(src[k + 'Fingerprint'].value).replace(/[^A-Za-z0-9]/g, '').slice(0, 12),
       w: src[k + 'Width'].value,
       h: src[k + 'Height'].value,
       date: a.assetDate ? a.assetDate.value : null,
       url: src[k + 'Res'].value.downloadURL.replace('${f}', 'photo.jpg'),
+      ...(thumb ? { thumbUrl: thumb[0][thumb[1] + 'Res'].value.downloadURL.replace('${f}', 'photo.jpg') } : {}),
     });
     if (photos.length >= MAX_PHOTOS) break;
   }
@@ -110,33 +113,42 @@ export async function getAlbum(env, { force = false, ctx } = {}) {
 // What the frame sees: ids and sizes only, no Apple URLs.
 export async function listPhotos(env, ctx) {
   const album = await getAlbum(env, { ctx });
-  return { photos: album.photos.map(({ url, ...p }) => p), updated: new Date(album.fetched).toISOString(), ...(album.error ? { error: album.error } : {}) };
+  return { photos: album.photos.map(({ url, thumbUrl, ...p }) => p), updated: new Date(album.fetched).toISOString(), ...(album.error ? { error: album.error } : {}) };
 }
 
 const PHOTO_TTL_S = 30 * 24 * 3600; // keep each image's bytes in KV for 30 days
 
 // Images are slow to fetch from iCloud (several seconds each), so the bytes are kept in KV
 // after the first fetch; later requests from any device are served from there.
-export async function photoResponse(env, id, ctx) {
+export async function photoResponse(env, id, ctx, thumbnail = false) {
   const headers = {
     'Content-Type': 'image/jpeg',
     // The id includes the image fingerprint, so a given URL never changes: cache it on the frame.
     'Cache-Control': 'private, max-age=604800, immutable',
   };
-  const stored = await env.CALENDAR.get('photo:' + id, 'arrayBuffer');
+  const fullKey = 'photo-v2:' + id;
+  const key = thumbnail ? 'thumb-v3:' + id : fullKey;
+  const stored = await env.CALENDAR.get(key, 'arrayBuffer');
   if (stored) return new Response(stored, { headers: { ...headers, 'X-Photo-Source': 'kv' } });
 
+  const full = thumbnail && await env.CALENDAR.get(fullKey, 'arrayBuffer');
+  if (full) return storePhoto(env, key, await shrink(env, full, 'image/jpeg', 360, 20 * 1024), headers, ctx);
+
   let photo = (await getAlbum(env)).photos.find((p) => p.id === id);
-  let upstream = photo && (await fetch(photo.url));
+  let upstream = photo && (await fetch(thumbnail && photo.thumbUrl ? photo.thumbUrl : photo.url));
   if (!upstream || !upstream.ok) {
     // Link expired or the photo is new: re-list once and try again.
     photo = (await getAlbum(env, { force: true })).photos.find((p) => p.id === id);
-    upstream = photo && (await fetch(photo.url));
+    upstream = photo && (await fetch(thumbnail && photo.thumbUrl ? photo.thumbUrl : photo.url));
   }
   if (!upstream || !upstream.ok) return new Response('not found', { status: 404 });
-  // Sized once for the 1920x1080 screen: a landscape fills it, a portrait fills half (they show in pairs).
-  const { bytes } = await shrink(env, await upstream.arrayBuffer(), 'image/jpeg', photo.h > photo.w ? 960 : 1920, 250 * 1024);
-  const save = env.CALENDAR.put('photo:' + id, bytes, { expirationTtl: PHOTO_TTL_S });
+  const width = thumbnail ? 360 : photo.h > photo.w ? 960 : 1920;
+  const minBytes = thumbnail ? 20 * 1024 : 250 * 1024;
+  return storePhoto(env, key, await shrink(env, await upstream.arrayBuffer(), 'image/jpeg', width, minBytes), headers, ctx);
+}
+
+async function storePhoto(env, key, image, headers, ctx) {
+  const save = env.CALENDAR.put(key, image.bytes, { expirationTtl: PHOTO_TTL_S });
   if (ctx && ctx.waitUntil) ctx.waitUntil(save); else await save;
-  return new Response(bytes, { headers: { ...headers, 'X-Photo-Source': 'icloud' } });
+  return new Response(image.bytes, { headers: { ...headers, 'X-Photo-Source': 'icloud' } });
 }

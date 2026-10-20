@@ -7,14 +7,20 @@
 # Then:  ./build.sh && adb install -r build/frame.apk
 set -euo pipefail
 
-VERSION_NAME=1.3
-VERSION_CODE=4
+VERSION_NAME=1.7
+VERSION_CODE=8
 MIN_SDK=23
 TARGET_SDK=27
 
 here="$(cd "$(dirname "$0")" && pwd)"
 cd "$here" # relative paths below, so a space in the project path is harmless
-sdk="${ANDROID_HOME:-/opt/homebrew/share/android-commandlinetools}"
+if [ -n "${ANDROID_HOME:-}" ]; then
+  sdk="$ANDROID_HOME"
+elif [ -d "$HOME/Library/Android/sdk" ]; then
+  sdk="$HOME/Library/Android/sdk"
+else
+  sdk="/opt/homebrew/share/android-commandlinetools"
+fi
 tools="$sdk/build-tools/34.0.0"
 platform="$sdk/platforms/android-34/android.jar"
 export JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17}"
@@ -26,15 +32,16 @@ done
 
 out=build
 rm -rf "$out"
-mkdir -p "$out/classes"
+mkdir -p "$out/gen" "$out/classes"
 
 # 1. Resources and manifest -> an unsigned APK skeleton.
-"$tools/aapt2" link --manifest AndroidManifest.xml -I "$platform" -o "$out/unsigned.apk" \
-  --min-sdk-version "$MIN_SDK" --target-sdk-version "$TARGET_SDK" \
+"$tools/aapt2" compile --dir res -o "$out/res.zip"
+"$tools/aapt2" link --manifest AndroidManifest.xml -I "$platform" -o "$out/unsigned.apk" "$out/res.zip" \
+  --java "$out/gen" --min-sdk-version "$MIN_SDK" --target-sdk-version "$TARGET_SDK" \
   --version-code "$VERSION_CODE" --version-name "$VERSION_NAME"
 
 # 2. Java -> class files -> classes.dex, added to the APK.
-sources=(); while IFS= read -r f; do sources+=("$f"); done < <(find src -name '*.java')
+sources=(); while IFS= read -r f; do sources+=("$f"); done < <(find src "$out/gen" -name '*.java')
 javac -nowarn --release 8 -classpath "$platform" -d build/classes "${sources[@]}"
 classes=(); while IFS= read -r f; do classes+=("$f"); done < <(find build/classes -name '*.class')
 "$tools/d8" --min-api "$MIN_SDK" --lib "$platform" --output build "${classes[@]}"

@@ -28,7 +28,7 @@ family to move into a new app, and it runs on a $50 frame instead of a subscript
   Todoist projects "Groceries" and "To-do" (names configurable).
 
 ## Capabilities and Constraints
-- Tabs: Home, Calendar (7 days), Groceries, To-do. Lists check off and add items in Todoist.
+- Tabs: Home, Calendar (7 days), Groceries, Tasks, Weather, Photos. Lists check off and add items in Todoist. Photos uses an iCloud Shared Album, newest first.
 - Light and dark themes, switching at sunrise and sunset.
 - Hardware floor: 1280×800 touchscreen at DPR 1, Android 6, WebView 106, 1 GB RAM, quad-core
   Cortex-A7, Mali-400 GPU. No shadows, blurs, filters or continuous animation; no `oklch()`,
@@ -39,7 +39,7 @@ family to move into a new app, and it runs on a $50 frame instead of a subscript
 ## Brand Commitments
 - Look and feel: Apple-like, in the manner of iOS widgets. Calm, like a well-made object in the
   home rather than a computer app. Less chrome: no boxes and pills where spacing and type can
-  do the work. (User's explicit choice, 2026-10-12.)
+  do the work.
 
 ## Evidence on Hand
 - Real data sources are configured per deployment; none are committed. Test calendars live in

@@ -2,8 +2,10 @@ package com.huntsyea.frame;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.http.SslError;
 import android.net.Uri;
@@ -44,9 +46,12 @@ public class MainActivity extends Activity {
   static final long RETRY_MS = 10000;
   static final long WATCHDOG_MS = 30000;
   static final long ESCAPE_HOLD_MS = 2000;
+  static final long NAV_CHECK_MS = 5000;
+  static final long NAV_REBIND_MS = 1000;
   static final float ESCAPE_SLOP_PX = 60;
 
   private final Handler handler = new Handler(Looper.getMainLooper());
+  private final Handler rebindHandler = new Handler(Looper.getMainLooper());
   private WebView web;
   private String url;
   private final float[] downX = new float[2];
@@ -84,6 +89,8 @@ public class MainActivity extends Activity {
   @Override
   protected void onCreate(Bundle state) {
     super.onCreate(state);
+    applyHomeFlag(getIntent());
+    keepNavigationEnabled();
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     web = new WebView(this);
@@ -109,7 +116,7 @@ public class MainActivity extends Activity {
         if (view.getTitle() != null && !view.getTitle().isEmpty() && !view.getTitle().startsWith("Webpage")) {
           loadedOnce = true;
           handler.removeCallbacks(retry);
-          Log.i(TAG, "loaded " + view.getTitle());
+          Log.i(TAG, "dashboard loaded");
         }
       }
 
@@ -142,10 +149,88 @@ public class MainActivity extends Activity {
   }
 
   @Override
+  protected void onResume() {
+    super.onResume();
+    NavigationService.setDashboardVisible(true);
+  }
+
+  @Override
+  protected void onPause() {
+    cancelEscape();
+    NavigationService.setDashboardVisible(false);
+    super.onPause();
+  }
+
+  @Override
   protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
     setIntent(intent);
+    applyHomeFlag(intent);
+    keepNavigationEnabled();
     if (handleIntent(intent)) web.loadUrl(url);
+  }
+
+  private void applyHomeFlag(Intent intent) {
+    if (intent == null || !intent.hasExtra("home")) return;
+    boolean home = intent.getBooleanExtra("home", false);
+    getPackageManager().setComponentEnabledSetting(
+        new ComponentName(this, getPackageName() + ".Home"),
+        home ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+        PackageManager.DONT_KILL_APP);
+  }
+
+  private void keepNavigationEnabled() {
+    if (checkSelfPermission("android.permission.WRITE_SECURE_SETTINGS") != PackageManager.PERMISSION_GRANTED) return;
+    String current = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+    String own = navigationService();
+    String others = withoutNavigation(current);
+    if (!isNavigationListed(current)) {
+      setNavigationServices(others.isEmpty() ? own : others + ":" + own);
+      return;
+    }
+    if (Settings.Secure.getInt(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, 0) != 1) {
+      setAccessibilityEnabled();
+      return;
+    }
+    handler.postDelayed(() -> {
+      if (NavigationService.isConnected()) return;
+      setNavigationServices(others);
+      rebindHandler.postDelayed(() -> setNavigationServices(current), NAV_REBIND_MS);
+    }, NAV_CHECK_MS);
+  }
+
+  private String navigationService() {
+    return getPackageName() + "/" + NavigationService.class.getName();
+  }
+
+  private boolean isNavigationEntry(String entry) {
+    return new ComponentName(this, NavigationService.class).equals(ComponentName.unflattenFromString(entry));
+  }
+
+  private boolean isNavigationListed(String services) {
+    if (services == null) return false;
+    for (String entry : services.split(":")) if (isNavigationEntry(entry)) return true;
+    return false;
+  }
+
+  private String withoutNavigation(String services) {
+    if (services == null) return "";
+    StringBuilder rest = new StringBuilder();
+    for (String entry : services.split(":")) {
+      if (entry.isEmpty() || isNavigationEntry(entry)) continue;
+      if (rest.length() > 0) rest.append(':');
+      rest.append(entry);
+    }
+    return rest.toString();
+  }
+
+  private void setNavigationServices(String services) {
+    Settings.Secure.putString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, services);
+    setAccessibilityEnabled();
+  }
+
+  private void setAccessibilityEnabled() {
+    Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, "1");
   }
 
   /** Applies the debug flag and, when the intent carries a URL, saves it. True if the URL changed. */

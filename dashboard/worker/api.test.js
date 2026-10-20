@@ -96,14 +96,19 @@ test('unknown list and missing token', async () => {
   assert.equal(res.status, 503);
 });
 
-test('weather is reduced to what the screen shows', () => {
+test('weather is reduced to the current, hourly, and weekly data the screen shows', () => {
   const w = shape({
-    current: { temperature_2m: 61.6, apparent_temperature: 59.2, weather_code: 3, is_day: 1 },
-    daily: { time: ['2026-10-12'], temperature_2m_max: [68.4], temperature_2m_min: [50.5], precipitation_probability_max: [20], weather_code: [61], sunrise: ['2026-10-12T07:03'], sunset: ['2026-10-12T18:21'] },
+    current: { time: '2026-10-12T09:00', temperature_2m: 61.6, apparent_temperature: 59.2, relative_humidity_2m: 82.1, wind_speed_10m: 12.6, weather_code: 3, is_day: 1 },
+    hourly: { time: ['2026-10-12T08:00', '2026-10-12T09:00', '2026-10-12T10:00'], temperature_2m: [60.1, 61.6, 63.2], apparent_temperature: [58.2, 59.2, 61.3], precipitation_probability: [40, 20, 10], weather_code: [61, 3, 2], wind_speed_10m: [10.2, 12.6, 14.4], is_day: [1, 1, 1] },
+    daily: { time: ['2026-10-12'], temperature_2m_max: [68.4], temperature_2m_min: [50.5], precipitation_probability_max: [20], precipitation_sum: [1.26], wind_speed_10m_max: [22.8], uv_index_max: [3.6], weather_code: [61], sunrise: ['2026-10-12T07:03'], sunset: ['2026-10-12T18:21'] },
   }, 'fahrenheit');
   assert.deepEqual({ ...w, updated: undefined }, {
-    unit: 'F', temp: 62, feels: 59, code: 3, day: true, updated: undefined,
-    days: [{ date: '2026-10-12', hi: 68, lo: 51, rain: 20, code: 61, sunrise: '2026-10-12T07:03', sunset: '2026-10-12T18:21' }],
+    unit: 'F', temp: 62, feels: 59, humidity: 82, wind: 13, code: 3, day: true, updated: undefined,
+    hours: [
+      { time: '2026-10-12T09:00', temp: 62, feels: 59, rain: 20, wind: 13, code: 3, day: true },
+      { time: '2026-10-12T10:00', temp: 63, feels: 61, rain: 10, wind: 14, code: 2, day: true },
+    ],
+    days: [{ date: '2026-10-12', hi: 68, lo: 51, rain: 20, precip: 1.3, wind: 23, uv: 4, code: 61, sunrise: '2026-10-12T07:03', sunset: '2026-10-12T18:21' }],
   });
 });
 
@@ -164,6 +169,10 @@ test('photos: album resolved anonymously, edited version preferred, videos skipp
   const beforeImg = calls.length;
   const again = await worker.fetch(new Request('https://frame.test/api/photos/' + list.photos[1].id + '?key=k'), penv, {});
   assert.equal(await again.text(), 'jpegbytes:https://cdn.test/edited/photo.jpg');
+  assert.equal(calls.length, beforeImg);
+  const thumb = await worker.fetch(new Request('https://frame.test/api/photos/' + list.photos[1].id + '?thumb=1&key=k'), penv, {});
+  assert.equal(thumb.status, 200);
+  assert.equal(await thumb.text(), 'jpegbytes:https://cdn.test/edited/photo.jpg');
   assert.equal(calls.length, beforeImg);
   // A second list call within the cache window is served from KV.
   const before = calls.length;

@@ -27,6 +27,8 @@
   const who = (item) => (item.assignee && list.people ? list.people[item.assignee] : null);
   let noun = $derived(name === 'todo' ? ['task', 'tasks'] : ['item', 'items']);
   let note = $derived(list.error && /TODOIST_TOKEN/.test(list.error) ? 'Todoist isn’t connected yet.' : list.error);
+  let projectTitle = $derived(String(list.project || title)
+    .replace(/^(?:[\u00a9\u00ae\u203c\u2049\u2122\u2139\u2194-\u21ff\u2300-\u27ff\u2b00-\u2bff\ud83c-\udbff][\udc00-\udfff]?[\ufe0e\ufe0f\u200d]*)+\s*/, '') || title);
 
   // Adding: the field only appears after tapping Add, and stays open for several in a row.
   let adding = $state(false);
@@ -55,7 +57,7 @@
         <button type="button" class="btn" onclick={() => { adding = false; draft = ''; }}>Done</button>
       </form>
     {:else}
-      <h1>{list.project || title}<span class="count">{items.length} {items.length === 1 ? noun[0] : noun[1]}</span></h1>
+      <h1>{projectTitle}<span class="count">{items.length} {items.length === 1 ? noun[0] : noun[1]}</span></h1>
       <button class="btn tint" onclick={openAdd}><Icon name="plus" size={20} />Add</button>
     {/if}
   </header>

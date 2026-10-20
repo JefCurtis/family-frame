@@ -7,10 +7,11 @@
   import Ambient from './views/Ambient.svelte';
   import Settings from './components/Settings.svelte';
   import Music from './views/Music.svelte';
-  import Recipes from './views/Recipes.svelte';
+  import Weather from './views/Weather.svelte';
+  import Photos from './views/Photos.svelte';
   import Message from './components/Message.svelte';
   import { connectHA, haConfigured } from './lib/ha.svelte.js';
-  import { ui, clock, weather, photos, messages, start, startSlideshow, loadList, photosVisible } from './lib/state.svelte.js';
+  import { ui, clock, weather, photos, messages, start, startSlideshow, loadList, loadPhotos, photosVisible } from './lib/state.svelte.js';
   import { noteAlbum, prepare } from './lib/slides.js';
   import { time, weatherInfo } from './lib/format.js';
 
@@ -19,7 +20,8 @@
     { id: 'calendar', label: 'Calendar' },
     { id: 'groceries', label: 'Groceries' },
     { id: 'todo', label: 'Tasks' },
-    { id: 'recipes', label: 'Recipes' },
+    { id: 'weather', label: 'Weather' },
+    { id: 'photos', label: 'Photos' },
     // Music appears once the frame has a Home Assistant token (see docs/frame.md).
     ...(haConfigured() ? [{ id: 'music', label: 'Music' }] : []),
   ];
@@ -37,7 +39,10 @@
   });
 
   // A list tab shows fresh items when opened (Groceries isn't polled while it's closed).
-  $effect(() => { if (ui.tab === 'groceries' || ui.tab === 'todo') loadList(ui.tab); });
+  $effect(() => {
+    if (ui.tab === 'groceries' || ui.tab === 'todo') loadList(ui.tab);
+    if (ui.tab === 'photos') loadPhotos();
+  });
 </script>
 
 <div class="stage">
@@ -62,7 +67,8 @@
     {#if ui.tab === 'home'}<Home />
     {:else if ui.tab === 'calendar'}<Week />
     {:else if ui.tab === 'music'}<Music />
-    {:else if ui.tab === 'recipes'}<Recipes />
+    {:else if ui.tab === 'weather'}<Weather />
+    {:else if ui.tab === 'photos'}<Photos />
     {:else if ui.tab === 'groceries'}<List name="groceries" title="Groceries" accent="var(--orange)" accentText="var(--orange-text)" />
     {:else}<List name="todo" title="Tasks" accent="var(--blue)" accentText="var(--blue-text)" board />{/if}
     {/if}
@@ -75,7 +81,7 @@
 </div>
 
 <style>
-  /* Fills the viewport: 1280×720 on the 1920×1080 FRAME156 (shown at 1.5×), 1280×800 on 10" frames. */
+  /* Fill the tested frame's 1280×800 landscape viewport. */
   .stage { position: relative; width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
   /* Tabs from the left edge; time, weather and buttons on the right. */
   .top { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 28px 14px; }

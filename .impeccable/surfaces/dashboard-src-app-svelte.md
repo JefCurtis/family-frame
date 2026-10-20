@@ -7,7 +7,7 @@ related_targets: ["dashboard/src/views/Home.svelte","dashboard/src/views/Week.sv
 
 # Dashboard (all tabs + idle)
 
-Scope: the frame's whole app, `dashboard/src/` (App shell, Home, Calendar, Groceries, To-do, idle). Mode: Operate.
+Scope: the frame's whole app, `dashboard/src/` (App shell, Home, Calendar, Groceries, Tasks, Weather, Photos, idle). Mode: Operate.
 Audience and job: adults in the kitchen/hall glancing for what's next and checking off list items.
 Constraints: see PRODUCT.md (1280×800, WebView 106, Mali-400: flat fills only).
 Unresolved: idle photo source.
@@ -20,7 +20,7 @@ OWN-WORLD: iOS system palette and grouped-list language. Day: #F2F2F7 ground, wh
 
 STORY: From across the room: time, next event, weather. Up close: a segmented control to switch tabs and Reminders-style rows to tick off.
 
-FIRST VIEWPORT: Top: centred segmented control (Home · Calendar · Groceries · To-do), temperature right. Home: lock-screen date and huge clock top-left with the weather widget below; Up Next calendar widget centre; To-do Reminders widget right.
+FIRST VIEWPORT: Top: centred segmented control (Home · Calendar · Groceries · Tasks · Weather · Photos), temperature right. Home: lock-screen date and huge clock top-left with the weather widget below; Up Next calendar widget centre; Tasks Reminders widget right. Weather expands into current conditions, the next 12 hours, and seven compact forecast days. Photos is a newest-first grid with a full-screen viewer.
 
 FORM: Apple canon, user-pinned (iOS widgets), so no concept roll was run (a pinned direction beats the roll); signature move: StandBy idle screen, red at night; theme follows sunrise/sunset. seed: none (user-pinned direction, no roll)
 

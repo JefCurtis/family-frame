@@ -74,7 +74,7 @@ export default {
         if (!env.ALBUM_URL) return json({ photos: [], error: 'Add ALBUM_URL to show photos' });
         return json(await listPhotos(env, ctx));
       }
-      if (url.pathname.startsWith('/api/photos/')) return photoResponse(env, url.pathname.slice('/api/photos/'.length), ctx);
+      if (url.pathname.startsWith('/api/photos/')) return photoResponse(env, url.pathname.slice('/api/photos/'.length), ctx, url.searchParams.has('thumb'));
       if (url.pathname === '/api/messages' && req.method === 'GET') return room(env).fetch('https://room/list');
       if (url.pathname === '/api/messages/live') return room(env).fetch(new Request('https://room/live', req));
       if (url.pathname === '/api/recipes/explore') {
